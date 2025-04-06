@@ -1,0 +1,108 @@
+@import '../../variables.scss';
+
+.wrapper{
+  height: 100vh;
+  background-image: url('../../assets/img/Fon1.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+
+  .mainBlock{
+    padding: 0px 50px 50px 50px;
+    display: flex;
+
+    &__block{
+      display: flex;
+      flex-direction: column;
+      gap: 150px;
+
+      &__title{
+        padding: 25px 0px 0px 25px;
+
+        p{
+          font-size: 64px;
+          line-height: 0.8;
+        }
+      }
+
+      &__startRoute{
+        display: flex;
+        justify-content: center;
+        margin-left: 70px;
+        gap: 30px;
+
+        &__img{
+          max-width: 350px;
+          width: 25vw;
+
+          img{
+            max-width: 100%
+          }
+          &__header{
+            padding: 15px 30px;
+            background-color: $orange-color;
+            border-top-right-radius: 10px;
+            border-top-left-radius: 10px;
+            display: flex;
+            gap: 15px;
+
+            p{
+              font-size: 20px;
+            }
+          }
+        }
+
+        &__description{
+          max-width: 770px;
+          width: 50vw;
+          background-color: rgba(0, 0, 0, 0.5);
+          border-radius: 20px;
+          padding: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          p:first-child{
+            font-size: 48px;
+            line-height: 0.9;
+          }
+          p:nth-child(2){
+            font-size: 32px;
+            line-height: 0.9;
+            color: $orange-color;
+          }
+          p:last-child {
+            font-size: 18px;
+          }
+        }
+
+      }
+    }
+  }
+
+  .verticalLine{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__line{
+      width: 1px;
+      height: 70vh;
+      background: #FFFFFF;
+      margin-bottom: 20px;
+    }
+
+    &__text{
+      writing-mode: vertical-lr;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      margin-bottom: 12px;
+    }
+  }
+
+  .routes{
+    background-color: $green-color;
+    height: 400px;
+    
+  }
+}
