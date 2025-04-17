@@ -1,13 +1,39 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  padding: 0;
+  font-family: 'GetVoIP Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Базовые медиа-запросы для адаптивной верстки */
+@media (max-width: 1200px) {
+  /* Стили для больших экранов */
+}
+
+@media (max-width: 992px) {
+  /* Стили для средних экранов */
+}
+
+@media (max-width: 768px) {
+  /* Стили для планшетов */
+}
+
+@media (max-width: 576px) {
+  /* Стили для мобильных устройств */
 }

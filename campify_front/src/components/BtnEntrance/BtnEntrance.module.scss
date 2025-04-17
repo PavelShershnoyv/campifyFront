@@ -1,4 +1,27 @@
 .btn{
   border-radius: 5px;
   cursor: pointer;
+  padding: 5px 15px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.85;
+  }
+  
+  &__text {
+    font-weight: 700;
+    font-size: 16px;
+    color: #FFFFFF;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn {
+    padding: 4px 12px;
+    
+    &__text {
+      font-size: 14px;
+    }
+  }
 }

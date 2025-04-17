@@ -4,10 +4,15 @@
   justify-content: space-between;
   border-bottom: 1px solid #FFFFFF;
   align-items: center;
+  position: relative;
+  z-index: 3;
 
   &__logo{
     font-size: 22px;
-    
+    font-weight: 700;
+    color: #FFFFFF;
+    cursor: pointer;
+    text-decoration: none;
   }
 
   &__nav{
@@ -16,11 +21,49 @@
 
     p{
       cursor: pointer;
+      color: #FFFFFF;
+      font-weight: 700;
+      transition: opacity 0.3s ease;
+      
+      &:hover {
+        opacity: 0.8;
+      }
     }
   }
 
   &__entrance{
     display: flex;
     gap: 30px;
+  }
+}
+
+/* Адаптивная верстка хедера */
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 20px;
+    
+    &__nav {
+      gap: 20px;
+    }
+    
+    &__entrance {
+      gap: 15px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .header {
+    &__logo {
+      font-size: 20px;
+    }
+    
+    &__nav {
+      gap: 15px;
+      
+      p {
+        font-size: 14px;
+      }
+    }
   }
 }

@@ -1,43 +1,54 @@
 @import '../../variables.scss';
 
 .wrapper{
-  height: 100vh;
-  background-image: url('../../assets/img/Fon1.jpg');
+  min-height: 100vh;
+  background-image: url('../../assets/img/Fon.jpg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+  position: relative;
 
   .mainBlock{
+    position: relative;
+    z-index: 2;
     padding: 0px 50px 50px 50px;
     display: flex;
+    height: calc(100vh - 70px); // Высота экрана минус высота хедера
 
     &__block{
       display: flex;
       flex-direction: column;
-      gap: 150px;
+      width: 100%;
 
       &__title{
-        padding: 25px 0px 0px 25px;
+        padding: 40px 0px 0px 25px;
+        margin-bottom: 80px;
 
         p{
+          font-family: 'GetVoIP Grotesque', sans-serif;
+          font-weight: 700;
           font-size: 64px;
-          line-height: 0.8;
+          line-height: 1;
+          color: #FFFFFF;
         }
       }
 
       &__startRoute{
         display: flex;
-        justify-content: center;
-        margin-left: 70px;
+        justify-content: flex-start;
+        margin-left: 25px;
         gap: 30px;
+        margin-bottom: 30px;
 
         &__img{
           max-width: 350px;
           width: 25vw;
 
           img{
-            max-width: 100%
+            max-width: 100%;
+            display: block;
           }
+          
           &__header{
             padding: 15px 30px;
             background-color: $orange-color;
@@ -45,9 +56,17 @@
             border-top-left-radius: 10px;
             display: flex;
             gap: 15px;
+            align-items: center;
 
             p{
               font-size: 20px;
+              font-weight: 700;
+              margin: 0;
+            }
+
+            img {
+              width: 20px;
+              height: auto;
             }
           }
         }
@@ -75,7 +94,6 @@
             font-size: 18px;
           }
         }
-
       }
     }
   }
@@ -84,6 +102,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-right: 30px;
+    position: relative;
+    z-index: 2;
 
     &__line{
       width: 1px;
@@ -97,12 +118,158 @@
       text-orientation: mixed;
       transform: rotate(180deg);
       margin-bottom: 12px;
+      font-size: 14px;
+      color: #FFFFFF;
     }
   }
+  
+  .featuredRoute {
+    padding: 0 50px;
+    margin: 60px auto;
+    max-width: 1340px;
+    width: 100%;
+  }
+  
+  .routeContainer {
+    padding: 0 50px;
+    margin: 60px auto;
+    max-width: 1340px;
+    width: 100%;
+  }
+}
 
-  .routes{
-    background-color: $green-color;
-    height: 400px;
+/* Адаптивная верстка */
+@media (max-width: 1200px) {
+  .wrapper {
+    .mainBlock {
+      &__block {
+        &__title {
+          p {
+            font-size: 56px;
+          }
+        }
+        
+        &__startRoute {
+          &__description {
+            p:first-child {
+              font-size: 40px;
+            }
+            p:nth-child(2) {
+              font-size: 28px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .wrapper {
+    .mainBlock {
+      &__block {
+        &__title {
+          p {
+            font-size: 48px;
+          }
+        }
+        
+        &__startRoute {
+          flex-direction: column;
+          
+          &__img {
+            max-width: 100%;
+            width: 100%;
+          }
+          
+          &__description {
+            max-width: 100%;
+            width: 100%;
+          }
+        }
+      }
+    }
     
+    .featuredRoute,
+    .routeContainer {
+      padding: 0 30px;
+      margin: 40px auto;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    .mainBlock {
+      padding: 0px 20px 30px 20px;
+      
+      &__block {
+        &__title {
+          padding: 30px 0px 0px 15px;
+          margin-bottom: 50px;
+          
+          p {
+            font-size: 40px;
+          }
+        }
+        
+        &__startRoute {
+          margin-left: 15px;
+          
+          &__description {
+            p:first-child {
+              font-size: 36px;
+            }
+            p:nth-child(2) {
+              font-size: 24px;
+            }
+            p:last-child {
+              font-size: 16px;
+            }
+          }
+        }
+      }
+    }
+    
+    .verticalLine {
+      display: none; // Скрываем вертикальную линию на мобильных устройствах
+    }
+    
+    .featuredRoute,
+    .routeContainer {
+      padding: 0 20px;
+      margin: 30px auto;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .wrapper {
+    .mainBlock {
+      &__block {
+        &__title {
+          p {
+            font-size: 32px;
+          }
+        }
+        
+        &__startRoute {
+          &__description {
+            p:first-child {
+              font-size: 28px;
+            }
+            p:nth-child(2) {
+              font-size: 20px;
+            }
+          }
+        }
+      }
+    }
+    
+    .featuredRoute,
+    .routeContainer {
+      padding: 0 15px;
+      margin: 20px auto;
+    }
   }
 }

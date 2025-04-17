@@ -1,0 +1,365 @@
+@import '../../variables.scss';
+
+.routesBlock {
+  width: 100%;
+  padding: 90px 50px;
+  background-color: $green-color;
+  min-height: 1012px;
+  position: relative;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 100px;
+  }
+
+  &__title {
+    font-family: 'GetVoIP Grotesque', sans-serif;
+    font-weight: 700;
+    font-size: 72px;
+    color: #FFFFFF;
+    margin: 0 0 50px 0;
+    line-height: 1.2;
+  }
+
+  &__tabs {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    background-color: rgba(152, 188, 172, 0.7);
+    border-radius: 30px;
+    padding: 15px 30px;
+    margin-right: 50px;
+
+    &__active {
+      color: #FFFFFF;
+      font-family: 'GetVoIP Grotesque', sans-serif;
+      font-weight: 700;
+      font-size: 24px;
+      margin-right: 15px;
+      cursor: pointer;
+    }
+
+    &__divider {
+      width: 1px;
+      height: 27px;
+      background-color: #ADC9BD;
+      margin: 0 15px;
+    }
+
+    &__inactive {
+      color: #ADC9BD;
+      font-family: 'GetVoIP Grotesque', sans-serif;
+      font-weight: 700;
+      font-size: 24px;
+      margin-left: 15px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #FFFFFF;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+.routesCard {
+  position: relative;
+  background-color: $orange-color;
+  border-radius: 12px;
+  width: 500px;
+  height: 560px;
+  overflow: hidden;
+
+  &__number {
+    position: absolute;
+    top: 30px;
+    left: 20px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 120px;
+    color: rgba(255, 255, 255, 0.2);
+    line-height: 1.24;
+    z-index: 1;
+  }
+
+  &__image {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 62%;
+    height: 324px;
+    border-bottom-left-radius: 12px;
+    z-index: 0;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+  }
+
+  &__content {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    z-index: 2;
+  }
+
+  &__title {
+    font-family: 'GetVoIP Grotesque', sans-serif;
+    font-weight: 700;
+    font-size: 50px;
+    color: #FFFFFF;
+    margin: 0 0 20px 0;
+    line-height: 1.2;
+    max-width: 300px;
+  }
+
+  &__button {
+    font-family: 'GetVoIP Grotesque', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &_primary {
+      color: $green-color;
+    }
+
+    &_secondary {
+      color: $green-color;
+    }
+
+    &__arrow {
+      width: 30px;
+      height: auto;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover &__arrow {
+      transform: translateX(5px);
+    }
+  }
+
+  &__secondary {
+    background-color: $light-green-color;
+    width: 440px;
+    height: 436px;
+    margin-top: 56px;
+    align-self: flex-start;
+  }
+}
+
+/* Адаптивная верстка */
+@media (max-width: 1280px) {
+  .routesBlock {
+    padding: 70px 40px;
+
+    &__title {
+      font-size: 60px;
+    }
+
+    &__tabs {
+      margin-right: 30px;
+    }
+  }
+
+  .routesCard {
+    width: 450px;
+    height: 520px;
+
+    &__title {
+      font-size: 44px;
+    }
+
+    &__secondary {
+      width: 400px;
+      height: 400px;
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .routesBlock {
+    padding: 60px 30px;
+    min-height: auto;
+
+    &__header {
+      margin-bottom: 70px;
+    }
+
+    &__title {
+      font-size: 50px;
+      margin-bottom: 40px;
+    }
+
+    &__tabs {
+      margin-right: 0;
+      align-self: flex-start;
+
+      &__active, &__inactive {
+        font-size: 20px;
+      }
+    }
+
+    &__content {
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+  }
+
+  .routesCard {
+    width: 100%;
+    max-width: 500px;
+    height: 480px;
+    margin: 0;
+
+    &__title {
+      font-size: 40px;
+    }
+
+    &__button {
+      font-size: 26px;
+    }
+
+    &__secondary {
+      width: 100%;
+      max-width: 500px;
+      height: 400px;
+      margin-top: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .routesBlock {
+    padding: 50px 20px;
+
+    &__title {
+      font-size: 40px;
+    }
+
+    &__tabs {
+      padding: 12px 25px;
+
+      &__active, &__inactive {
+        font-size: 18px;
+      }
+
+      &__divider {
+        height: 24px;
+      }
+    }
+  }
+
+  .routesCard {
+    height: 420px;
+
+    &__number {
+      font-size: 100px;
+    }
+
+    &__image {
+      height: 280px;
+    }
+
+    &__title {
+      font-size: 36px;
+    }
+
+    &__button {
+      font-size: 24px;
+      gap: 12px;
+
+      &__arrow {
+        width: 24px;
+      }
+    }
+
+    &__secondary {
+      height: 350px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .routesBlock {
+    padding: 40px 15px;
+
+    &__title {
+      font-size: 32px;
+    }
+
+    &__tabs {
+      padding: 10px 20px;
+
+      &__active, &__inactive {
+        font-size: 16px;
+      }
+
+      &__divider {
+        height: 20px;
+      }
+    }
+  }
+
+  .routesCard {
+    height: 380px;
+
+    &__number {
+      font-size: 80px;
+    }
+
+    &__image {
+      height: 220px;
+      width: 65%;
+    }
+
+    &__content {
+      left: 25px;
+      bottom: 30px;
+    }
+
+    &__title {
+      font-size: 30px;
+      margin-bottom: 15px;
+    }
+
+    &__button {
+      font-size: 22px;
+      gap: 10px;
+
+      &__arrow {
+        width: 20px;
+      }
+    }
+
+    &__secondary {
+      height: 320px;
+    }
+  }
+} 

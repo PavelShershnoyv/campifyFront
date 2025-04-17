@@ -2,6 +2,7 @@ import classes from "./Map.module.scss";
 import { useRef, useEffect } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Footer from "../Footer/Footer";
 
 const Map = () => {
   const mapRef = useRef();
@@ -75,6 +76,7 @@ const Map = () => {
   return (
     <>
       <div className={classes.mapContainer} ref={mapContainerRef} />
+      <Footer />
     </>
   );
 };

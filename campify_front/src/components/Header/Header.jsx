@@ -1,12 +1,13 @@
+import { Link } from "react-router-dom";
 import BtnEntrance from "../BtnEntrance/BtnEntrance";
 import classes from "./Header.module.scss";
 
 const Header = () => {
   return (
     <div className={classes.header}>
-      <p className={classes.header__logo}>Campify</p>
+      <Link to="/" className={classes.header__logo}>Campify</Link>
       <div className={classes.header__nav}>
-        <p>Маршруты</p>
+        <Link to="/routes"><p>Маршруты</p></Link>
         <p>Планировщик</p>
         <p>О нас</p>
       </div>
