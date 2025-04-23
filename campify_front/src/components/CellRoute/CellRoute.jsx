@@ -11,7 +11,7 @@ export const CellRoute = ({
   rating = "4,3",
   link = "/route-details",
   image,
-  imagePosition = "left" // "left" или "right"
+  imagePosition = "left"
 }) => {
   const isImageLeft = imagePosition === 'left';
   

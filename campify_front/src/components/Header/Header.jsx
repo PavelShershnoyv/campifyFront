@@ -8,7 +8,7 @@ const Header = () => {
       <Link to="/" className={classes.header__logo}>Campify</Link>
       <div className={classes.header__nav}>
         <Link to="/routes"><p>Маршруты</p></Link>
-        <p>Планировщик</p>
+        <Link to="/scheduler"><p>Планировщик</p></Link>
         <p>О нас</p>
       </div>
       <div className={classes.header__entrance}>

@@ -2,7 +2,6 @@ import classes from "./Map.module.scss";
 import { useRef, useEffect } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import Footer from "../Footer/Footer";
 
 const Map = () => {
   const mapRef = useRef();
@@ -17,6 +16,8 @@ const Map = () => {
       zoom: 12.12,
       language: "Russian",
     });
+
+    // const gpx = toGeoJSON.gpx(gpxData);
 
     mapRef.current.on("load", () => {
       mapRef.current.addSource("route", {
@@ -76,7 +77,6 @@ const Map = () => {
   return (
     <>
       <div className={classes.mapContainer} ref={mapContainerRef} />
-      <Footer />
     </>
   );
 };
