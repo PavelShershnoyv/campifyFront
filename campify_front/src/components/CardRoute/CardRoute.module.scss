@@ -415,6 +415,27 @@
     gap: 10px;
     height: auto;
   }
+  
+  &.singlePhoto {
+    .mainPhoto {
+      flex: 1;
+      height: 100%;
+    }
+  }
+  
+  &.twoPhotos {
+    .mainPhoto {
+      flex: 2;
+    }
+    
+    .secondaryPhotos {
+      flex: 1;
+      
+      .photoItem {
+        height: 100%;
+      }
+    }
+  }
 }
 
 .mainPhoto {
@@ -668,4 +689,90 @@
   @media screen and (max-width: $mobile) {
     font-size: 18px;
   }
+}
+
+.loading, .error {
+  text-align: center;
+  margin: 50px 0;
+  padding: 30px;
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 15px;
+  
+  @media screen and (max-width: $tablet) {
+    margin: 30px 0;
+    font-size: 20px;
+    padding: 20px;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    margin: 20px 0;
+    font-size: 18px;
+    padding: 15px;
+  }
+}
+
+.loading {
+  color: $orange-color;
+  background-color: rgba(255, 153, 0, 0.1);
+}
+
+.error {
+  color: #ff6b6b;
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.noComments {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+  font-size: 18px;
+  font-style: italic;
+  
+  @media screen and (max-width: $tablet) {
+    font-size: 16px;
+    padding: 15px;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+.photoLoading, .photoError, .noPhotos {
+  text-align: center;
+  margin: 30px 0;
+  padding: 30px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 15px;
+  
+  @media screen and (max-width: $tablet) {
+    margin: 20px 0;
+    font-size: 18px;
+    padding: 20px;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    margin: 15px 0;
+    font-size: 16px;
+    padding: 15px;
+  }
+}
+
+.photoLoading {
+  color: $orange-color;
+  background-color: rgba(255, 153, 0, 0.05);
+}
+
+.photoError {
+  color: #ff6b6b;
+  background-color: rgba(255, 0, 0, 0.05);
+}
+
+.noPhotos {
+  color: #777;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-style: italic;
 } 

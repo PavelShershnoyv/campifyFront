@@ -14,9 +14,9 @@ function App() {
       <Routes>
         <Route path="" element={<MainPage />} />
         <Route path="/routes" element={<RoutesPage />} />
-        <Route path="/map" element={<Map />} />
+        {/* <Route path="/map" element={<Map />} /> */}
         <Route path="/scheduler" element={<Scheduler />} />
-        <Route path="/route-details" element={<CardRoute />} />
+        <Route path="/route-details/:id" element={<CardRoute />} />
       </Routes>
       <Footer />
     </div>

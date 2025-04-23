@@ -1,8 +1,17 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import styles from './CardRoute.module.scss';
 import Header from '../Header/Header';
 import Map from '../Map/Map';
+import { useRoutes } from '../../hooks/useRoutes';
+// import { ReactComponent as StarIcon } from '../../assets/icons/star-icon.svg';
+// import { ReactComponent as LikeIcon } from '../../assets/icons/like-icon.svg';
+// import { ReactComponent as LocationIcon } from '../../assets/icons/location-icon.svg';
+// import { ReactComponent as ShareIcon } from '../../assets/icons/share-icon.svg';
+// import { ReactComponent as UserIcon } from '../../assets/icons/user-icon.svg';
+// import { ReactComponent as ClockIcon } from '../../assets/icons/clock-icon.svg';
+// import { ReactComponent as LevelIcon } from '../../assets/icons/level-icon.svg';
+import RouteMap from '../Map/RouteMap';
 
 const DownloadIcon = () => (
   <span className={styles.buttonIcon}>
@@ -27,35 +36,136 @@ const ChecklistIcon = () => (
   </span>
 );
 
-export const CardRoute = ({ route }) => {
+export const CardRoute = () => {
   const { id } = useParams();
+  const { 
+    currentRoute, 
+    loading, 
+    error, 
+    loadRouteById, 
+    routePhotos, 
+    photosLoading, 
+    photosError, 
+    loadRoutePhotos, 
+    getRoutePhotos,
+    loadRouteGpx,
+    getRouteGpxData,
+    routeGpxData,
+    gpxLoading,
+    gpxError
+  } = useRoutes();
   
-  const routeData = route || {
-    id: id || '1',
-    title: 'Природный парк «Бажовские места»',
-    description: 'Природный парк «Бажовские места» назван в честь знаменитого уральского писателя Павла Петровича Бажова. Поскольку прошлое, настоящее и будущее Сысертского района связано с именем этого человека, любившего беззаветно свою родину, ее природу. Природный парк расположен рядом с малой родиной П.П. Бажова – г. Сысерть, в котором находится мемориальный дом –музей родителей П. П. Бажова. Он много раз бывал в этих местах, шел по знакомым с детства тропам, записывал народные предания, использовал путевые впечатления в своем творчестве. Образ родной ему Сысерти и окрестностей запечатлен во многих сказах, очерках и повестях.',
-    details: {
-      distance: 23.55,
-      duration: '7 ч 29 мин',
-      height: '255 м',
-      routeType: 'В одном направлении',
-      difficulty: 2,
-    },
-    photos: [
-        "../../assets/img/FonCard.png",
-        "../../assets/img/FonCard.png",
-        "../../assets/img/FonCard.png",
-        "../../assets/img/FonCard.png"
+  // Состояние для хранения фотографий текущего маршрута
+  const [photos, setPhotos] = useState([]);
+  
+  // Загружаем маршрут при монтировании компонента
+  useEffect(() => {
+    if (id) {
+      loadRouteById(id);
+      loadRoutePhotos(id);
+      loadRouteGpx(id);
+    }
+  }, [id]);
+  
+  // Обновляем фотографии, когда они загружены
+  useEffect(() => {
+    if (id && routePhotos[id]) {
+      setPhotos(routePhotos[id]);
+    }
+  }, [id, routePhotos]);
+  
+  // Показываем состояние загрузки
+  if (loading) {
+    return (
+      <div className={styles.wrapper}>
+        <Header />
+        <div className={styles.container}>
+          <div className={styles.loading}>Загрузка информации о маршруте...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Показываем ошибку, если есть
+  if (error) {
+    return (
+      <div className={styles.wrapper}>
+        <Header />
+        <div className={styles.container}>
+          <div className={styles.error}>Ошибка: {error}</div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Если маршрут не загружен, показываем заглушку
+  if (!currentRoute) {
+    return (
+      <div className={styles.wrapper}>
+        <Header />
+        <div className={styles.container}>
+          <div className={styles.loading}>Маршрут не найден</div>
+        </div>
+      </div>
+    );
+  }
 
-    ],
-    comments: [
-      {
-        id: 1,
-        author: 'Иван Иванович',
-        text: 'Прекрасно место для похода! Советую всем',
-        rating: 5
-      }
-    ]
+  // Используем данные из Redux
+  const routeData = currentRoute;
+
+  // Получаем GPX-данные для текущего маршрута
+  const gpxData = getRouteGpxData(id);
+
+  // Определяем фотографии для отображения (с учетом API структуры)
+  const firstThreePhotos = photos.slice(0, 3);
+
+  // Рендерим разные компоненты в зависимости от количества фотографий
+  const renderPhotoGrid = () => {
+    if (photos.length === 0) {
+      return <div className={styles.noPhotos}>У этого маршрута пока нет фотографий</div>;
+    }
+
+    if (photos.length === 1) {
+      return (
+        <div className={`${styles.photoGrid} ${styles.singlePhoto}`}>
+          <div className={styles.mainPhoto}>
+            <img src={photos[0].image} alt="Фото маршрута" className={styles.photo} />
+          </div>
+        </div>
+      );
+    }
+
+    if (photos.length === 2) {
+      return (
+        <div className={`${styles.photoGrid} ${styles.twoPhotos}`}>
+          <div className={styles.mainPhoto}>
+            <img src={photos[0].image} alt="Фото маршрута 1" className={styles.photo} />
+          </div>
+          <div className={styles.secondaryPhotos}>
+            <div className={styles.photoItem}>
+              <img src={photos[1].image} alt="Фото маршрута 2" className={styles.photo} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // 3 и более фотографий
+    return (
+      <div className={styles.photoGrid}>
+        <div className={styles.mainPhoto}>
+          <img src={photos[0].image} alt="Фото маршрута 1" className={styles.photo} />
+        </div>
+        <div className={styles.secondaryPhotos}>
+          <div className={styles.photoItem}>
+            <img src={photos[1].image} alt="Фото маршрута 2" className={styles.photo} />
+          </div>
+          <div className={styles.photoItem}>
+            <img src={photos[2].image} alt="Фото маршрута 3" className={styles.photo} />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -74,7 +184,17 @@ export const CardRoute = ({ route }) => {
               <div className={styles.leftColumn}>
                 <div className={styles.mapContainer}>
                   <div className={styles.mapPlaceholder}>
-                    <Map />
+                    {gpxLoading ? (
+                      <div className={styles.loading}>Загрузка карты...</div>
+                    ) : gpxError ? (
+                      <div className={styles.error}>Ошибка загрузки карты: {gpxError}</div>
+                    ) : (
+                      <RouteMap 
+                        coords={gpxData.coordinates} 
+                        centerCoordinate={gpxData.centerCoordinate}
+                        routeName={routeData.title || 'Маршрут'}
+                      />
+                    )}
                   </div>
                 </div>
                 
@@ -97,7 +217,7 @@ export const CardRoute = ({ route }) => {
                     <span className={styles.detailLabel}>Дистанция</span>
                     <div className={styles.detailValueContainer}>
                       <span className={styles.detailIcon}></span>
-                      <span className={styles.detailValue}>{routeData.details.distance} км</span>
+                      <span className={styles.detailValue}>{routeData.distance}</span>
                     </div>
                   </div>
                   
@@ -105,7 +225,7 @@ export const CardRoute = ({ route }) => {
                     <span className={styles.detailLabel}>Время</span>
                     <div className={styles.detailValueContainer}>
                       <span className={styles.detailIcon}></span>
-                      <span className={styles.detailValue}>{routeData.details.duration}</span>
+                      <span className={styles.detailValue}>{routeData.time}</span>
                     </div>
                   </div>
                   
@@ -113,14 +233,16 @@ export const CardRoute = ({ route }) => {
                     <span className={styles.detailLabel}>Набор высоты</span>
                     <div className={styles.detailValueContainer}>
                       <span className={styles.detailIcon}></span>
-                      <span className={styles.detailValue}>{routeData.details.height}</span>
+                      <span className={styles.detailValue}>{routeData.height}</span>
                     </div>
                   </div>
                   
                   <div className={styles.detailItem}>
                     <span className={styles.detailLabel}>Тип маршрута</span>
                     <div className={styles.detailValueContainer}>
-                      <span className={styles.detailValue}>{routeData.details.routeType}</span>
+                      <span className={styles.detailValue}>
+                        {routeData.type === 'wild' ? 'Дикий' : 'Обустроенный'}
+                      </span>
                     </div>
                   </div>
                   
@@ -130,8 +252,8 @@ export const CardRoute = ({ route }) => {
                       <div className={styles.difficultyContainer}>
                         <span className={styles.mountainIcon}></span>
                         <span className={styles.detailValue}>
-                          {routeData.details.difficulty === 1 ? 'легко' : 
-                           routeData.details.difficulty === 2 ? 'умеренно' : 'сложно'}
+                          {routeData.difficulty === 1 ? 'легко' : 
+                           routeData.difficulty === 2 ? 'умеренно' : 'сложно'}
                         </span>
                       </div>
                     </div>
@@ -147,19 +269,13 @@ export const CardRoute = ({ route }) => {
             
             <div className={styles.photoSection}>
               <h2 className={styles.sectionTitle}>Фото</h2>
-              <div className={styles.photoGrid}>
-                <div className={styles.mainPhoto}>
-                  <img src={require("../../assets/img/LeftCellRoute.jpg")} alt="Фото маршрута 1" className={styles.photo} />
-                </div>
-                <div className={styles.secondaryPhotos}>
-                  <div className={styles.photoItem}>
-                    <img src={require("../../assets/img/LeftCellRoute.jpg")} alt="Фото маршрута 2" className={styles.photo} />
-                  </div>
-                  <div className={styles.photoItem}>
-                    <img src={require("../../assets/img/LeftCellRoute.jpg")} alt="Фото маршрута 3" className={styles.photo} />
-                  </div>
-                </div>
-              </div>
+              {photosLoading ? (
+                <div className={styles.photoLoading}>Загрузка фотографий...</div>
+              ) : photosError ? (
+                <div className={styles.photoError}>Ошибка загрузки фотографий: {photosError}</div>
+              ) : (
+                renderPhotoGrid()
+              )}
             </div>
             
             <div className={styles.commentsSection}>
@@ -180,7 +296,7 @@ export const CardRoute = ({ route }) => {
                 </div>
                 
                 <div className={styles.commentsList}>
-                  {routeData.comments.map((comment) => (
+                  {routeData.comments && routeData.comments.map((comment) => (
                     <div key={comment.id} className={styles.commentItem}>
                       <div className={styles.commentHeader}>
                         <div className={styles.commentRating}>
@@ -196,6 +312,12 @@ export const CardRoute = ({ route }) => {
                       <p className={styles.commentText}>{comment.text}</p>
                     </div>
                   ))}
+                  
+                  {(!routeData.comments || routeData.comments.length === 0) && (
+                    <div className={styles.noComments}>
+                      Пока нет комментариев. Будьте первым!
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
