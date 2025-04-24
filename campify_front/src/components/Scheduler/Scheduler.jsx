@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -18,6 +17,15 @@ const Scheduler = () => {
   const [placeDescription, setPlaceDescription] = useState('');
   const [locationArea, setLocationArea] = useState('');
   const [difficulty, setDifficulty] = useState(null);
+  
+  // Состояния для поиска
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Ссылка на карту
+  const mapRef = useRef(null);
   
   // Функция для преобразования минут в часы и минуты
   const formatDuration = (seconds) => {
@@ -78,7 +86,7 @@ const Scheduler = () => {
       const [longitude, latitude] = coordinates[midPoint];
       
       // Получаем API-ключ Mapbox из текущего окружения
-      const mapboxApiKey = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1IjoibmF2aWdhdG9yMiIsImEiOiJjbHdjdnF4OGYwNGYwMm1xejdobXEwM3cwIn0.-1FJQTxzzRhsHDYhMg8qtw';
+      const mapboxApiKey = process.env.REACT_APP_MAPBOX_KEY;
       
       // Запрос к Mapbox Geocoding API для получения информации о местоположении
       // Расширяем типы, чтобы получить больше информации: region (область/край), place (город/населенный пункт), country (страна)
@@ -145,6 +153,122 @@ const Scheduler = () => {
     } catch (error) {
       console.error('Ошибка при определении местоположения:', error);
       return 'Россия Свердловская область';
+    }
+  };
+  
+  // Функция для поиска локаций
+  const searchLocations = async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    try {
+      // Сначала ищем среди существующих локаций
+      const response = await fetch('http://127.0.0.1:8000/api/map_points/');
+      if (!response.ok) {
+        throw new Error(`Ошибка при загрузке локаций: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Фильтруем локации по запросу
+      const filteredLocations = data.filter(location => 
+        location.name && location.name.toLowerCase().includes(query.toLowerCase())
+      ).map(location => ({
+        ...location,
+        source: 'database',
+        coordinates: [parseFloat(location.longitude), parseFloat(location.latitude)]
+      }));
+      
+      /* Закомментировано: поиск через Mapbox API
+      // Если база данных не дала результатов или их мало, ищем с помощью MapBox
+      let mapboxResults = [];
+      if (filteredLocations.length < 5) {
+        const mapboxResponse = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${process.env.REACT_APP_MAPBOX_KEY}&country=ru&language=ru&limit=5`
+        );
+        
+        if (mapboxResponse.ok) {
+          const mapboxData = await mapboxResponse.json();
+          
+          mapboxResults = mapboxData.features.map(feature => ({
+            id: feature.id,
+            name: feature.place_name,
+            description: feature.place_type.join(', '),
+            coordinates: feature.center,
+            source: 'mapbox'
+          }));
+        }
+      }
+      
+      // Объединяем результаты с приоритетом на локации из базы
+      const combinedResults = [...filteredLocations, ...mapboxResults].slice(0, 8);
+      */
+      
+      // Используем только результаты из базы данных
+      const combinedResults = filteredLocations.slice(0, 8);
+      setSearchResults(combinedResults);
+      
+      console.log('Результаты поиска:', combinedResults);
+    } catch (error) {
+      console.error('Ошибка при поиске локаций:', error);
+      toast.error('Ошибка при поиске локаций');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Обработчик изменения поискового запроса с debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery) {
+        searchLocations(searchQuery);
+      }
+    }, 300);
+    
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const handleSearchInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setShowResults(true);
+  };
+
+  const handleSearchResultClick = (location) => {
+    console.log('Выбрана локация:', location);
+    setSearchQuery(location.name);
+    setShowResults(false);
+    
+    // Если у нас есть координаты, перемещаем карту к ним
+    if (location.coordinates && location.coordinates.length === 2) {
+      if (mapRef.current && mapRef.current.flyToLocation) {
+        // Передаем полный объект локации, а не только координаты
+        mapRef.current.flyToLocation({
+          ...location,
+          onAddToRoute: () => {
+            // Очищаем поисковый запрос после добавления в маршрут
+            setSearchQuery('');
+          }
+        });
+      } else {
+        console.log('Ссылка на карту недоступна');
+      }
+    }
+  };
+
+  const handleSearchButtonClick = () => {
+    if (!searchQuery) return;
+    
+    // Если есть активные результаты поиска, используем первый
+    if (searchResults.length > 0) {
+      handleSearchResultClick(searchResults[0]);
+    } else {
+      // Иначе выполняем новый поиск
+      searchLocations(searchQuery);
     }
   };
   
@@ -280,6 +404,24 @@ const Scheduler = () => {
     }
   };
   
+  // Добавляем обработчик для закрытия результатов поиска при клике вне области
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Если клик был вне области результатов поиска и поискового ввода
+      if (showResults && 
+          !event.target.closest(`.${styles.searchResults}`) && 
+          !event.target.closest(`.${styles.searchInput}`)) {
+        setShowResults(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showResults, styles.searchResults, styles.searchInput]);
+  
   return (
     <div className={styles.wrapper}>
       <Header />
@@ -331,14 +473,43 @@ const Scheduler = () => {
                     type="text" 
                     placeholder="Поиск места или адреса" 
                     className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    onFocus={() => setShowResults(true)}
+                    onClick={(e) => e.stopPropagation()}
                   />
+                  {isSearching && (
+                    <div className={styles.searchSpinner}>
+                      <div className={styles.spinner}></div>
+                    </div>
+                  )}
+                  {showResults && searchResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {searchResults.map((result) => (
+                        <div 
+                          key={result.id || result.name} 
+                          className={styles.searchResultItem}
+                          onClick={() => handleSearchResultClick(result)}
+                        >
+                          <div className={styles.resultName}>{result.name}</div>
+                          {result.description && <div className={styles.resultDescription}>{result.description}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <button className={styles.searchButton}>Найти</button>
+                <button 
+                  className={styles.searchButton} 
+                  onClick={handleSearchButtonClick}
+                  disabled={isSearching}
+                >
+                  Найти
+                </button>
               </div>
             </div>
             
             <div className={styles.mapContainer}>
-              <PlannerMap onRouteUpdate={handleRouteCreated} />
+              <PlannerMap onRouteUpdate={handleRouteCreated} ref={mapRef} />
             </div>
           </div>
           
@@ -347,46 +518,27 @@ const Scheduler = () => {
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Дистанция</span>
-              <div className={styles.infoValue}>
-                <div className={styles.marker}></div>
-                <span>{route ? formatDistance(route.distance) : '-- км'}</span>
-              </div>
+              <span>{route ? formatDistance(route.distance) : '-- км'}</span>
             </div>
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Время</span>
-              <div className={styles.infoValue}>
-                <div className={styles.marker}></div>
-                <span>{route ? formatDuration(route.duration) : '-- ч'}</span>
-              </div>
+              <span>{route ? formatDuration(route.duration) : '-- ч'}</span>
             </div>
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Набор высоты</span>
-              <div className={styles.infoValue}>
-                <div className={styles.marker}></div>
-                <span>{route && route.elevationGain ? `${route.elevationGain} м` : '-- м'}</span>
-              </div>
+              <span>{route && route.elevationGain ? `${route.elevationGain} м` : '-- м'}</span>
             </div>
             
             <div className={styles.infoItem}>
               <span className={styles.infoLabel}>Сложность</span>
-              <div className={styles.infoValue}>
-                <div className={styles.difficultyIcon}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 3L4 15H20L16 3M12 15V19M8 19H16" stroke="#619766" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <span>{difficulty ? difficulty.label : '--'}</span>
-              </div>
+              <span>{difficulty ? difficulty.label : '--'}</span>
             </div>
             
             <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Регион</span>
-              <div className={styles.infoValue}>
-                <div className={styles.marker}></div>
-                <span>{locationArea || 'Определяется...'}</span>
-              </div>
+              <span className={styles.infoLabel}>Регион</span>               
+              <span>{locationArea || 'Определяется...'}</span>
             </div>
 
             <button 
