@@ -52,7 +52,10 @@ export const CardRoute = () => {
     getRouteGpxData,
     routeGpxData,
     gpxLoading,
-    gpxError
+    gpxError,
+    downloadGpxFile,
+    downloadLoading,
+    downloadError
   } = useRoutes();
   
   // Состояние для хранения фотографий текущего маршрута
@@ -199,9 +202,13 @@ export const CardRoute = () => {
                 </div>
                 
                 <div className={styles.actionsPanel}>
-                  <button className={styles.downloadButton}>
+                  <button 
+                    className={styles.downloadButton}
+                    onClick={() => downloadGpxFile(id)}
+                    disabled={downloadLoading}
+                  >
                     <DownloadIcon />
-                    Скачать
+                    {downloadLoading ? 'Загрузка...' : 'Скачать'}
                   </button>
                   <button className={styles.checklistButton}>
                     <ChecklistIcon />

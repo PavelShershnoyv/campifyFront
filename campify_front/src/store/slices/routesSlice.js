@@ -40,7 +40,7 @@ export const fetchRoutes = createAsyncThunk(
         description: route.description,
         country: route.location_area.split(' ').pop(), // Берем последнее слово как страну
         region: route.location_area.split(' ').slice(0, -1).join(' '), // Берем все, кроме последнего слова как регион
-        distance: `${route.length_in_km} км`,
+        distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
         rating: '4.7', // Рейтинг отсутствует в API, ставим заглушку
         difficulty: route.difficulty,
@@ -77,21 +77,21 @@ export const fetchRouteById = createAsyncThunk(
         description: route.description,
         country: route.location_area.split(' ').pop(), // Берем последнее слово как страну
         region: route.location_area.split(' ').slice(0, -1).join(' '), // Берем все, кроме последнего слова как регион
-        distance: `${route.length_in_km} км`,
+        distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
         rating: '4.7',
         difficulty: route.difficulty,
-        type: route.type === 1 ? 'wild' : 'equipped',
+        type: route.type === 2 ? 'wild' : 'equipped',
         height: `${route.height} м`,
         gpxUrl: route.gpx_url,
         author: route.author,
         createdAt: route.created_at,
         views: route.views,
         details: {
-          distance: route.length_in_km,
+          distance: parseFloat(route.length_in_km).toFixed(2),
           duration: formatDuration(route.duration),
           height: `${route.height} м`,
-          routeType: route.type === 1 ? 'Дикий' : 'Обустроенный',
+          routeType: route.type === 2 ? 'Дикий' : 'Обустроенный',
           difficulty: route.difficulty
         },
         comments: [] // В API пока нет комментариев, добавим пустой массив
@@ -156,7 +156,6 @@ export const fetchRouteGpx = createAsyncThunk(
         }
       }
 
-      console.log(coordinates);
       
       // Вычисляем центральную точку для карты
       let centerCoordinate = null;
@@ -176,6 +175,40 @@ export const fetchRouteGpx = createAsyncThunk(
   }
 );
 
+// Асинхронный action для скачивания GPX файла маршрута по ID
+export const downloadRouteGpx = createAsyncThunk(
+  'routes/downloadRouteGpx',
+  async (routeId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/download/gpx/`);
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      // Получаем файл как Blob
+      const blob = await response.blob();
+      
+      // Создаем временную ссылку для скачивания файла
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `route-${routeId}.gpx`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Очищаем ресурсы
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return { success: true };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   routes: [],
   wildRoutes: [],
@@ -186,9 +219,11 @@ const initialState = {
   loading: false,
   photosLoading: false, // Отдельное состояние загрузки для фотографий
   gpxLoading: false, // Отдельное состояние загрузки для GPX-данных
+  downloadLoading: false, // Состояние загрузки для скачивания GPX файла
   error: null,
   photosError: null, // Отдельное состояние ошибки для фотографий
   gpxError: null, // Отдельное состояние ошибки для GPX-данных
+  downloadError: null, // Состояние ошибки для скачивания GPX файла
 };
 
 const routesSlice = createSlice({
@@ -277,6 +312,19 @@ const routesSlice = createSlice({
       .addCase(fetchRouteGpx.rejected, (state, action) => {
         state.gpxLoading = false;
         state.gpxError = action.payload;
+      })
+      
+      // Обработчики для downloadRouteGpx
+      .addCase(downloadRouteGpx.pending, (state) => {
+        state.downloadLoading = true;
+        state.downloadError = null;
+      })
+      .addCase(downloadRouteGpx.fulfilled, (state) => {
+        state.downloadLoading = false;
+      })
+      .addCase(downloadRouteGpx.rejected, (state, action) => {
+        state.downloadLoading = false;
+        state.downloadError = action.payload;
       });
   },
 });

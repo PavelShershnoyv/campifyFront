@@ -14,6 +14,9 @@
   margin: 0 auto;
   padding: 40px 20px 60px;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   @media screen and (max-width: $tablet) {
     padding: 30px 20px 40px;
@@ -24,20 +27,34 @@
   }
 }
 
+.header {
+  margin-bottom: 20px;
+}
+
 .title {
-  font-size: 64px;
+  font-size: 48px;
   font-weight: 700;
   color: $white;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
 
   @media screen and (max-width: $tablet) {
-    font-size: 48px;
-    margin-bottom: 30px;
+    font-size: 40px;
+    margin-bottom: 8px;
   }
 
   @media screen and (max-width: $mobile) {
-    font-size: 36px;
-    margin-bottom: 25px;
+    font-size: 32px;
+    margin-bottom: 6px;
+  }
+}
+
+.subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  
+  @media screen and (max-width: $mobile) {
+    font-size: 16px;
   }
 }
 
@@ -169,16 +186,17 @@
 
 .mapContainer {
   flex: 1;
-  min-height: 400px;
+  min-height: 450px;
   border-radius: 15px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   
   @media screen and (max-width: $tablet) {
-    min-height: 300px;
+    min-height: 350px;
   }
   
   @media screen and (max-width: $mobile) {
-    min-height: 250px;
+    min-height: 300px;
   }
 }
 
@@ -216,7 +234,7 @@
   padding: 30px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   
   @media screen and (max-width: 1024px) {
     width: 100%;
@@ -235,26 +253,34 @@
 .infoItem {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .infoLabel {
-  font-size: 20px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.5);
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .infoValue {
   display: flex;
   align-items: center;
-  gap: 10px;
-  justify-content: space-between;
+  position: relative;
+  height: 20px;
+  
+  .marker {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
   
   span {
+    position: absolute;
+    right: 0;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 500;
     color: #303030;
-    text-align: right;
   }
 }
 
@@ -266,30 +292,200 @@
 }
 
 .difficultyIcon {
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.saveButton {
-  margin-top: auto;
-  height: 60px;
-  background-color: $orange-color;
-  border: none;
+.routeInstructions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.instructionContainer {
+  background-color: $green-color;
   border-radius: 15px;
-  padding: 0 20px;
-  font-size: 20px;
-  font-weight: 700;
+  padding: 20px 25px;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  @media screen and (max-width: 768px) {
+    padding: 15px 20px;
+  }
+}
+
+.instructionStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  
+  @media screen and (min-width: 768px) {
+    flex: 1;
+    padding-right: 10px;
+  }
+  
+  @media screen and (max-width: 768px) {
+    margin-bottom: 15px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $white;
+  color: $green-color;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.stepText {
   color: $white;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.noRouteMessage {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.routeDetails {
+  h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: $green-color;
+    margin: 0 0 16px 0;
+  }
+}
+
+.routeStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.routeStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.routeStatLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #555;
+}
+
+.routeStatValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: $green-color;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  
+  @media screen and (max-width: $mobile) {
+    flex-direction: column;
+  }
+}
+
+.saveButton {
+  background-color: $orange-color;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
+  margin-top: 10px;
   transition: background-color 0.3s;
   
   &:hover {
     background-color: darken($orange-color, 5%);
   }
   
-  @media screen and (max-width: $mobile) {
-    height: 50px;
-    font-size: 16px;
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
   }
+  
+  &.loading {
+    position: relative;
+    color: transparent;
+    
+    &:after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      margin-left: -10px;
+      margin-top: -10px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-top-color: white;
+      animation: spin 1s infinite linear;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorMessage {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.routeInfoContainer {
+  background-color: $white;
+  border-radius: 15px;
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 } 

@@ -1,0 +1,59 @@
+@import '../../variables.scss';
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.primary {
+  background-color: $orange-color;
+  color: $white;
+  
+  &:hover {
+    background-color: darken($orange-color, 5%);
+  }
+}
+
+.secondary {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: $white;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.text {
+  background-color: transparent;
+  color: $orange-color;
+  padding: 8px 16px;
+  
+  &:hover {
+    background-color: rgba($orange-color, 0.1);
+  }
+} 
