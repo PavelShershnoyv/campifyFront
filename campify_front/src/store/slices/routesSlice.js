@@ -38,8 +38,8 @@ export const fetchRoutes = createAsyncThunk(
         id: route.id.toString(),
         title: route.name,
         description: route.description,
-        country: route.location_area.split(' ').pop(), // Берем последнее слово как страну
-        region: route.location_area.split(' ').slice(0, -1).join(' '), // Берем все, кроме последнего слова как регион
+        country: 'Россия', // Устанавливаем страну как Россия
+        region: route.location_area.replace('Россия ', ''), // Убираем 'Россия ' из начала строки, если она есть
         distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
         rating: '4.7', // Рейтинг отсутствует в API, ставим заглушку
@@ -75,8 +75,8 @@ export const fetchRouteById = createAsyncThunk(
         id: route.id.toString(),
         title: route.name,
         description: route.description,
-        country: route.location_area.split(' ').pop(), // Берем последнее слово как страну
-        region: route.location_area.split(' ').slice(0, -1).join(' '), // Берем все, кроме последнего слова как регион
+        country: 'Россия', // Устанавливаем страну как Россия
+        region: route.location_area.replace('Россия ', ''), // Убираем 'Россия ' из начала строки, если она есть
         distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
         rating: '4.7',

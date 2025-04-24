@@ -259,8 +259,8 @@ export const CardRoute = () => {
                       <div className={styles.difficultyContainer}>
                         <span className={styles.mountainIcon}></span>
                         <span className={styles.detailValue}>
-                          {routeData.difficulty === 1 ? 'легко' : 
-                           routeData.difficulty === 2 ? 'умеренно' : 'сложно'}
+                          {routeData.difficulty === 1 ? 'легкая' : 
+                           routeData.difficulty === 2 ? 'средняя' : 'тяжелая'}
                         </span>
                       </div>
                     </div>
