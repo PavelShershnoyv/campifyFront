@@ -367,15 +367,15 @@ const PlannerMap = ({ onRouteUpdate }) => {
     try {
       // Initialize map if not already initialized
       if (!map.current) {
-        // Default to Moscow
-        const initialCoordinate = [37.6173, 55.7558];
+        // Координаты Свердловской области (Екатеринбург)
+        const initialCoordinate = [60.6122, 56.8519];
         
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/outdoors-v12',
           center: initialCoordinate,
           language: "ru",
-          zoom: 10
+          zoom: 7
         });
 
         // Add navigation controls
