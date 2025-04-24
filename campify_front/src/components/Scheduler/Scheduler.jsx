@@ -167,7 +167,7 @@ const Scheduler = () => {
     
     try {
       // Сначала ищем среди существующих локаций
-      const response = await fetch('http://127.0.0.1:8000/api/map_points/');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/map_points/`);
       if (!response.ok) {
         throw new Error(`Ошибка при загрузке локаций: ${response.status}`);
       }
@@ -353,7 +353,7 @@ const Scheduler = () => {
       console.log('Отправляем данные маршрута:', routeData);
       
       // Отправляем данные маршрута
-      const response = await fetch('http://127.0.0.1:8000/api/routes/', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/routes/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +379,7 @@ const Scheduler = () => {
       formData.append('gpx_file', gpxBlob, `${routeName.replace(/\s+/g, '_')}.gpx`);
       
       // Отправляем GPX файл
-      const gpxResponse = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/upload_gpx/`, {
+      const gpxResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/routes/${routeId}/upload_gpx/`, {
         method: 'POST',
         body: formData,
       });

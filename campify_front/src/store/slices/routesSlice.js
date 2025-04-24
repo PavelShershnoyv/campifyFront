@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchAndParseGpx } from '../../utils/gpxParser';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 // Функция для форматирования времени из формата "HH:MM:SS" в "X ч Y мин"
 const formatDuration = (duration) => {
   if (!duration) return "Неизвестно";
@@ -25,7 +27,7 @@ export const fetchRoutes = createAsyncThunk(
   'routes/fetchRoutes',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/routes/');
+      const response = await fetch(`${apiUrl}/api/routes/`);
       
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
@@ -62,7 +64,7 @@ export const fetchRouteById = createAsyncThunk(
   'routes/fetchRouteById',
   async (routeId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/`);
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/`);
       
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
@@ -107,7 +109,7 @@ export const fetchRoutePhotos = createAsyncThunk(
   'routes/fetchRoutePhotos',
   async (routeId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/photos/`);
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/photos/`);
       
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
@@ -129,7 +131,7 @@ export const fetchRouteGpx = createAsyncThunk(
   'routes/fetchRouteGpx',
   async (routeId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/gpx/`);
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/gpx/`);
       
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
@@ -180,7 +182,7 @@ export const downloadRouteGpx = createAsyncThunk(
   'routes/downloadRouteGpx',
   async (routeId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/routes/${routeId}/download/gpx/`);
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/download/gpx/`);
       
       if (!response.ok) {
         throw new Error(`Ошибка сервера: ${response.status}`);
