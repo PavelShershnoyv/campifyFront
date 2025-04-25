@@ -61,6 +61,11 @@ export const CardRoute = () => {
   // Состояние для хранения фотографий текущего маршрута
   const [photos, setPhotos] = useState([]);
   
+  // Состояния для формы комментариев
+  const [commentText, setCommentText] = useState('');
+  const [commentRating, setCommentRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  
   // Загружаем маршрут при монтировании компонента
   useEffect(() => {
     if (id) {
@@ -169,6 +174,45 @@ export const CardRoute = () => {
         </div>
       </div>
     );
+  };
+
+  // Обработчик изменения текста комментария
+  const handleCommentTextChange = (e) => {
+    setCommentText(e.target.value);
+  };
+  
+  // Обработчик клика по звезде рейтинга
+  const handleRatingClick = (rating) => {
+    setCommentRating(rating);
+  };
+  
+  // Обработчики наведения на звезды для эффекта hover
+  const handleRatingMouseEnter = (rating) => {
+    setHoverRating(rating);
+  };
+  
+  const handleRatingMouseLeave = () => {
+    setHoverRating(0);
+  };
+  
+  // Обработчик отправки комментария
+  const handleSubmitComment = () => {
+    if (commentText.trim() === '' || commentRating === 0) {
+      alert('Пожалуйста, напишите комментарий и выберите рейтинг');
+      return;
+    }
+    
+    // Здесь будет код для отправки комментария на бэкенд
+    // Пока просто выводим в консоль
+    console.log('Отправка комментария:', {
+      text: commentText,
+      rating: commentRating,
+      routeId: id
+    });
+    
+    // Сбрасываем форму
+    setCommentText('');
+    setCommentRating(0);
   };
 
   return (
@@ -292,14 +336,28 @@ export const CardRoute = () => {
                   <input 
                     type="text" 
                     placeholder="Оставьте ваш комментарий..." 
-                    className={styles.commentInput} 
+                    className={styles.commentInput}
+                    value={commentText}
+                    onChange={handleCommentTextChange}
                   />
                   <div className={styles.ratingContainer}>
                     {Array(5).fill(0).map((_, i) => (
-                      <span key={i} className={`${styles.ratingIcon} ${i < 4 ? styles.active : ''}`}></span>
+                      <span 
+                        key={i} 
+                        className={`${styles.ratingIcon} ${(i < commentRating || i < hoverRating) ? styles.active : ''}`}
+                        onClick={() => handleRatingClick(i + 1)}
+                        onMouseEnter={() => handleRatingMouseEnter(i + 1)}
+                        onMouseLeave={handleRatingMouseLeave}
+                      ></span>
                     ))}
                   </div>
-                  <button className={styles.submitButton}>Отправить</button>
+                  <button 
+                    className={styles.submitButton}
+                    onClick={handleSubmitComment}
+                    disabled={commentText.trim() === '' || commentRating === 0}
+                  >
+                    Отправить
+                  </button>
                 </div>
                 
                 <div className={styles.commentsList}>

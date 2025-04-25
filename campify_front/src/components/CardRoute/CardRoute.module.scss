@@ -586,6 +586,12 @@
     background-color: darken($orange-color, 5%);
   }
   
+  &:disabled {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: not-allowed;
+  }
+  
   @media screen and (max-width: $tablet) {
     height: 50px;
     font-size: 18px;
@@ -645,6 +651,8 @@
   -webkit-mask-size: contain;
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
   
   &.active {
     background-color: $orange-color;
