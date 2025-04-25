@@ -393,13 +393,13 @@ const Scheduler = () => {
       // Небольшая задержка перед перенаправлением
       setTimeout(() => {
         navigate('/routes');
+        setIsLoading(false);
       }, 2000);
       
     } catch (err) {
       console.error('Ошибка при сохранении маршрута:', err);
       setError(err.message);
       toast.error(`Ошибка при сохранении маршрута: ${err.message}`);
-    } finally {
       setIsLoading(false);
     }
   };

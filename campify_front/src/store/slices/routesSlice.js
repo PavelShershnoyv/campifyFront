@@ -44,7 +44,7 @@ export const fetchRoutes = createAsyncThunk(
         region: route.location_area.replace('Россия ', ''), // Убираем 'Россия ' из начала строки, если она есть
         distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
-        rating: '4.7', // Рейтинг отсутствует в API, ставим заглушку
+        rating: route.average_rating ? route.average_rating.toFixed(1) : '0.0', // Используем average_rating из API
         difficulty: route.difficulty,
         type: route.type === 2 ? 'wild' : 'equipped', // Предполагаем, что 2 - дикие, 1 - обустроенные
         height: `${route.height} м`,
@@ -81,7 +81,7 @@ export const fetchRouteById = createAsyncThunk(
         region: route.location_area.replace('Россия ', ''), // Убираем 'Россия ' из начала строки, если она есть
         distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
         time: formatDuration(route.duration),
-        rating: '4.7',
+        rating: route.average_rating ? route.average_rating.toFixed(1) : '0.0',
         difficulty: route.difficulty,
         type: route.type === 2 ? 'wild' : 'equipped',
         height: `${route.height} м`,
