@@ -12,14 +12,18 @@ const Header = () => {
         <p>О нас</p>
       </div>
       <div className={classes.header__entrance}>
-        <BtnEntrance
-          text={"Вход"}
-          styleBtn={{ border: "1px solid #DBAB49", padding: "5px 18px" }}
-        />
-        <BtnEntrance
-          text={"Регистрация"}
-          styleBtn={{ background: "#DBAB49", padding: "5px" }}
-        />
+        <Link to="/login">
+          <BtnEntrance
+            text={"Вход"}
+            styleBtn={{ border: "1px solid #DBAB49", padding: "5px 18px" }}
+          />
+        </Link>
+        <Link to="/registration">
+          <BtnEntrance
+            text={"Регистрация"}
+            styleBtn={{ background: "#DBAB49", padding: "5px" }}
+          />
+        </Link>
       </div>
     </div>
   );

@@ -770,13 +770,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
         <h3>Ошибка карты</h3>
         <p>{error}</p>
         <div style={{ marginTop: '10px', fontSize: '14px' }}>
-          <p>Возможные причины:</p>
-          <ul style={{textAlign: 'left', paddingLeft: '20px'}}>
-            <li>Отсутствует API-ключ Mapbox. Проверьте файл .env</li>
-            <li>Некорректный формат API-ключа (есть переносы строк)</li>
-            <li>Проблемы с подключением к серверам Mapbox</li>
-            <li>Выбранные точки находятся слишком далеко друг от друга</li>
-          </ul>
           <p style={{marginTop: '10px'}}>
             <button 
               onClick={() => window.location.reload()}

@@ -1,0 +1,198 @@
+@import '../../variables.scss'; // Импортируем переменные
+
+.registerPageContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; // Фиксированная высота экрана
+  background-color: #fffcf0; // цвет из макета (75:218)
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+.logoContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 3vh; // Относительная высота вместо фиксированной
+  z-index: 2;
+  
+  a {
+    display: inline-block;
+  }
+  
+  .logo {
+    width: 20vw; // Относительная ширина
+    max-width: 313px; // Максимальная ширина из макета
+    height: auto;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.formContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  z-index: 1;
+  margin-top: 2vh;
+  flex: 1; // Занимает доступное пространство
+}
+
+.formWrapper {
+  background-color: #fffefc; // цвет из макета (75:226)
+  padding: 3vh 23px;
+  border-radius: 15px; // соответствует макету (75:226)
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 405px; // ширина из макета (75:226)
+  text-align: center;
+}
+
+.noAccountText {
+  color: #619766; // цвет из макета (75:227)
+  font-family: "GetVoIP Grotesque", sans-serif; // шрифт из макета
+  font-weight: 700; // жирность из макета
+  font-size: 20px; // размер из макета (75:227)
+  margin-bottom: 2vh;
+  text-align: center;
+}
+
+.inputGroup {
+  margin-bottom: 1.5vh;
+  
+  input {
+    width: 100%;
+    height: 55px; // высота из макета (75:228-231)
+    padding: 0 18px;
+    border: none;
+    border-radius: 15px; // радиус из макета
+    background-color: #98bcac; // цвет из макета (75:228-231)
+    font-family: "GetVoIP Grotesque", sans-serif;
+    font-size: 14px; // размер из макета (75:232-235)
+    color: #ffffff;
+    
+    &::placeholder {
+      color: #e0ebe6; // цвет из макета (75:232-235)
+      font-weight: 700;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.submitButton {
+  width: 100%;
+  height: 60px; // высота из макета (75:236)
+  margin-top: 2vh;
+  background-color: #dbab49; // цвет из макета (75:236)
+  color: #ffffff; // цвет из макета (75:237)
+  border: none;
+  border-radius: 15px; // радиус из макета
+  font-family: "GetVoIP Grotesque", sans-serif;
+  font-weight: 700;
+  font-size: 20px; // размер из макета (75:237)
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: darken(#dbab49, 10%);
+  }
+}
+
+// Декоративные элементы
+.leftDecoration {
+  position: absolute;
+  left: 10vw;
+  bottom: 20vh;
+  z-index: 1;
+  
+  .treeImage {
+    width: 18vw;
+    max-width: 277px;
+    height: auto;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(42%) sepia(10%) saturate(1662%) hue-rotate(92deg) brightness(96%) contrast(86%); // зеленый цвет #619766 из маски (75:222)
+  }
+}
+
+.rightDecoration {
+  position: absolute;
+  right: 7vw;
+  bottom: 20vh;
+  z-index: 1;
+  
+  .tentImage {
+    width: 16vw;
+    max-width: 257px;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.bottomEllipse {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120vw;
+  height: 30vh; // Уменьшенная высота полянки
+  max-height: 320px; // Максимальная высота
+  background-color: #8cbea0; // цвет из макета (75:223)
+  border-radius: 100% 100% 0 0;
+  z-index: 0;
+}
+
+// Адаптивность
+@media (max-width: 1200px) {
+  .leftDecoration {
+    left: 5vw;
+    
+    .treeImage {
+      width: 15vw;
+    }
+  }
+  
+  .rightDecoration {
+    right: 5vw;
+    
+    .tentImage {
+      width: 15vw;
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .leftDecoration, .rightDecoration {
+    display: none;
+  }
+  
+  .bottomEllipse {
+    width: 150vw;
+    height: 25vh;
+  }
+}
+
+@media (max-width: 576px) {
+  .logoContainer .logo {
+    width: 50vw;
+  }
+  
+  .formWrapper {
+    max-width: 90%;
+    padding: 20px 15px;
+  }
+  
+  .bottomEllipse {
+    width: 200vw;
+    height: 20vh;
+  }
+} 
