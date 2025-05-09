@@ -62,8 +62,6 @@ export const CellRoute = ({
       <div className={styles.content}>
         <h2 className={styles.title}>{title}</h2>
         
-        {description && <p className={styles.description}>{description}</p>}
-        
         <div className={styles.info}>
           <div className={styles.location}>
             <span className={styles.country}>{country}</span>
