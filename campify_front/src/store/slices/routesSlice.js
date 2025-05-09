@@ -211,6 +211,37 @@ export const downloadRouteGpx = createAsyncThunk(
   }
 );
 
+// Асинхронный action для обновления статуса публичности маршрута
+export const updateRoutePublicStatus = createAsyncThunk(
+  'routes/updateRoutePublicStatus',
+  async ({ routeId, isPublic }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Важно для работы с куками
+        body: JSON.stringify({
+          is_public: isPublic
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      const updatedRoute = await response.json();
+      return {
+        routeId: updatedRoute.id.toString(),
+        isPublic: updatedRoute.is_public
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   routes: [],
   wildRoutes: [],
@@ -327,6 +358,23 @@ const routesSlice = createSlice({
       .addCase(downloadRouteGpx.rejected, (state, action) => {
         state.downloadLoading = false;
         state.downloadError = action.payload;
+      })
+      
+      // Обработчики для updateRoutePublicStatus
+      .addCase(updateRoutePublicStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateRoutePublicStatus.fulfilled, (state, action) => {
+        state.currentRoute = {
+          ...state.currentRoute,
+          isPublic: action.payload.isPublic
+        };
+        state.loading = false;
+      })
+      .addCase(updateRoutePublicStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });

@@ -9,6 +9,7 @@ import filterIcon from '../../assets/icon/Filter.png';
 import leftImage from '../../assets/img/LeftCellRoute.jpg';
 import bigRouteImage from "../../assets/img/BigCellRoute.jpg";
 import { fetchUserRoutesThunk, deleteRouteThunk } from '../../features/map/mapPointsSlice';
+import { updateRoutePublicStatus } from '../../store/slices/routesSlice';
 
 // Компонент для страницы "Мои Маршруты"
 const MyRoutesPage = () => {
@@ -45,6 +46,23 @@ const MyRoutesPage = () => {
         .catch(error => {
           console.error(`Ошибка при удалении маршрута: ${error}`);
           alert(`Ошибка при удалении маршрута: ${error}`);
+        });
+    }
+  };
+
+  // Обработчик публикации маршрута
+  const handleShareRoute = (routeId) => {
+    if (window.confirm('Вы уверены, что хотите опубликовать этот маршрут? После публикации он будет доступен всем пользователям.')) {
+      dispatch(updateRoutePublicStatus({ routeId, isPublic: true }))
+        .unwrap()
+        .then(() => {
+          console.log(`Маршрут с ID: ${routeId} успешно опубликован`);
+          // Обновляем список маршрутов пользователя
+          dispatch(fetchUserRoutesThunk(currentUser.id));
+        })
+        .catch(error => {
+          console.error(`Ошибка при публикации маршрута: ${error}`);
+          alert(`Ошибка при публикации маршрута: ${error}`);
         });
     }
   };
@@ -192,6 +210,8 @@ const MyRoutesPage = () => {
                   rating={mainRoute.rating || 5.0}
                   isUserRoute={true}
                   onDelete={() => handleDeleteRoute(mainRoute.id)}
+                  isPublic={mainRoute.is_public}
+                  onShare={() => handleShareRoute(mainRoute.id)}
                   link={`/route-details/${mainRoute.id}`}
                 />
               </div>
@@ -213,6 +233,8 @@ const MyRoutesPage = () => {
                   imagePosition={index % 2 !== 0 ? "right" : "left"}
                   isUserRoute={true}
                   onDelete={() => handleDeleteRoute(route.id)}
+                  isPublic={route.is_public}
+                  onShare={() => handleShareRoute(route.id)}
                   link={`/route-details/${route.id}`}
                 />
               </div>
