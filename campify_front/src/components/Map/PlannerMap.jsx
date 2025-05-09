@@ -1,23 +1,35 @@
 import React from 'react';
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import styles from './PlannerMap.module.scss';
 import { v4 as uuidv4 } from 'uuid';
+import { fetchMapPoints, buildRouteThunk, clearRoute, saveRouteThunk } from '../../features/map/mapPointsSlice';
 
 const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
+  const dispatch = useDispatch();
+  
+  // Получаем данные из Redux store
+  const { points: mapPoints, loading: isLoading, error: reduxError, currentRoute, routeLoading, routeError, saveRouteLoading, saveRouteError } = useSelector(state => state.mapPoints);
+  const { currentUser, isAuthenticated } = useSelector(state => state.user);
+  
+  console.log('PlannerMap - Redux state:', useSelector(state => state));
+  console.log('PlannerMap - User state:', useSelector(state => state.user));
+  console.log('PlannerMap - CurrentUser:', currentUser);
+  
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [error, setError] = useState(null);
   const [waypoints, setWaypoints] = useState([]);
-  const [mapPoints, setMapPoints] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const markersRef = useRef([]);
   const mapPointMarkersRef = useRef([]);
   const searchMarkerRef = useRef(null);
   const routeRef = useRef(null);
   const mapInitializedRef = useRef(false);
   const isRouteBuildingRef = useRef(false);
+  const [routeName, setRouteName] = useState('');
+  const [routeDescription, setRouteDescription] = useState('');
 
   // Экспортируем методы для внешнего доступа через ref
   useImperativeHandle(ref, () => ({
@@ -146,27 +158,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       return map.current.getZoom();
     }
   }));
-
-  // Функция для загрузки точек с сервера
-  const fetchMapPoints = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/map_points/`);
-      if (!response.ok) {
-        throw new Error(`Ошибка загрузки точек: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Загруженные локации:', data);
-      setMapPoints(data);
-      return data;
-    } catch (err) {
-      console.error('Ошибка при загрузке локаций:', err);
-      setError(`Не удалось загрузить локации: ${err.message}`);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Функция для добавления точек локаций на карту
   const addLocationPoints = (points) => {
@@ -310,19 +301,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
         }, 100);
       });
     });
-    
-    // Комментируем автоматическое центрирование карты на всех точках
-    // Если есть точки и нет активных waypoints, центрируем карту на всех точках
-    /*
-    if (hasPoints && waypoints.length === 0) {
-      console.log('Центрируем карту на всех локациях');
-      map.current.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 12,
-        duration: 1000 // Длительность анимации в миллисекундах
-      });
-    }
-    */
   };
 
   // Функция для создания маркера
@@ -435,120 +413,172 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
     console.log("Будем использовать точки:", pointsToUse, "Количество:", pointsToUse.length);
 
     try {
-      // Формируем координаты для запроса
+      // Формируем координаты для запроса в формате строки
       const coordinates = pointsToUse.map(point => `${point[0]},${point[1]}`).join(';');
       
       console.log("Построение маршрута между точками:", pointsToUse);
-      console.log("API Key:", mapboxgl.accessToken);
       
-      // Проверяем API ключ на наличие переносов строк
-      const cleanAccessToken = mapboxgl.accessToken;
+      // Используем Redux Toolkit для запроса
+      const resultAction = await dispatch(buildRouteThunk({
+        coordinates,
+        accessToken: mapboxgl.accessToken
+      }));
       
-      // Запрос к Mapbox Directions API с учетом высоты
-      const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?access_token=${cleanAccessToken}&geometries=geojson&annotations=distance,duration&overview=full`;
-      console.log("URL запроса:", url);
-      
-      const response = await fetch(url);
-      
-      console.log("Статус ответа:", response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Ошибка при получении маршрута: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("Полученные данные:", data);
-      
-      if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
-        throw new Error('Не удалось построить маршрут между выбранными точками');
-      }
-      
-      const route = data.routes[0];
-      const routeCoordinates = route.geometry.coordinates;
-      
-      // Удаляем существующий маршрут, если он есть
-      if (map.current.getSource('route')) {
-        map.current.removeLayer('route');
-        map.current.removeSource('route');
-      }
+      // Проверяем результат
+      if (buildRouteThunk.fulfilled.match(resultAction)) {
+        const route = resultAction.payload;
+        const routeCoordinates = route.geometry.coordinates;
+        
+        // Удаляем существующий маршрут, если он есть
+        if (map.current.getSource('route')) {
+          map.current.removeLayer('route');
+          map.current.removeSource('route');
+        }
 
-      // Добавляем новый маршрут
-      map.current.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: routeCoordinates
+        // Добавляем новый маршрут
+        map.current.addSource('route', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: routeCoordinates
+            }
           }
-        }
-      });
-      
-      map.current.addLayer({
-        id: 'route',
-        type: 'line',
-        source: 'route',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#ff6b35',
-          'line-width': 5
-        }
-      });
-
-      // Вычисляем набор высоты из данных о маршруте
-      let elevationGain = 0;
-      
-      // Поскольку мы не запрашиваем данные о высоте (API не поддерживает эту опцию для walking),
-      // мы можем получить приблизительное значение из другого API или использовать плейсхолдер
-      
-      // Используем приблизительную оценку: 10 метров набора высоты на каждый километр маршрута
-      elevationGain = Math.round(route.distance / 1000 * 10);
-      
-      // Сохраняем информацию о маршруте
-      routeRef.current = {
-        distance: route.distance, // в метрах
-        duration: route.duration, // в секундах
-        coordinates: routeCoordinates,
-        elevationGain: elevationGain // приблизительный набор высоты
-      };
-
-      // Вызываем колбэк с информацией о маршруте, если он предоставлен
-      if (onRouteUpdate) {
-        onRouteUpdate({
-          distance: route.distance, // Передаем дистанцию в метрах без преобразования
-          duration: route.duration, // Передаем время в секундах без преобразования
-          coordinates: routeCoordinates,
-          elevationGain: elevationGain // приблизительный набор высоты
         });
-      }
+        
+        map.current.addLayer({
+          id: 'route',
+          type: 'line',
+          source: 'route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#ff6b35',
+            'line-width': 5
+          }
+        });
 
-      // Подгоняем карту под маршрут
-      const bounds = new mapboxgl.LngLatBounds();
-      routeCoordinates.forEach(coord => bounds.extend(coord));
-      map.current.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 14
-      });
-      
-      // Обновляем состояние waypoints, если они отличаются от текущих
-      if (JSON.stringify(pointsToUse) !== JSON.stringify(waypoints)) {
-        console.log("Обновляем waypoints с новыми координатами");
-        setWaypoints(pointsToUse);
-      }
+        // Вычисляем набор высоты из данных о маршруте
+        let elevationGain = 0;
+        
+        // Приблизительная оценка: 10 метров набора высоты на каждый километр маршрута
+        elevationGain = Math.round(route.distance / 1000 * 10);
+        
+        // Сохраняем информацию о маршруте
+        routeRef.current = {
+          distance: route.distance, // в метрах
+          duration: route.duration, // в секундах
+          coordinates: routeCoordinates,
+          elevationGain: elevationGain
+        };
 
-      isRouteBuildingRef.current = false; // Сбрасываем флаг построения маршрута
-      return route;
+        // Вызываем колбэк с информацией о маршруте, если он предоставлен
+        if (onRouteUpdate) {
+          onRouteUpdate({
+            distance: route.distance,
+            duration: route.duration,
+            coordinates: routeCoordinates,
+            elevationGain: elevationGain 
+          });
+        }
+
+        // Подгоняем карту под маршрут
+        const bounds = new mapboxgl.LngLatBounds();
+        routeCoordinates.forEach(coord => bounds.extend(coord));
+        map.current.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 14
+        });
+        
+        // Обновляем состояние waypoints, если они отличаются от текущих
+        if (JSON.stringify(pointsToUse) !== JSON.stringify(waypoints)) {
+          console.log("Обновляем waypoints с новыми координатами");
+          setWaypoints(pointsToUse);
+        }
+      } else {
+        // Обрабатываем ошибку, если запрос не удался
+        const errorMessage = resultAction.payload || 'Ошибка при построении маршрута';
+        alert(`Ошибка при построении маршрута: ${errorMessage}. Проверьте API-ключ Mapbox в файле .env.`);
+        setError(`Ошибка при построении маршрута: ${errorMessage}`);
+      }
     } catch (err) {
       console.error('Ошибка при построении маршрута:', err);
       alert(`Ошибка при построении маршрута: ${err.message}. Проверьте API-ключ Mapbox в файле .env.`);
       setError(`Ошибка при построении маршрута: ${err.message}`);
+    } finally {
       isRouteBuildingRef.current = false; // Сбрасываем флаг построения маршрута
-      return null;
     }
+  };
+
+  // Функция для сохранения маршрута
+  const saveRoute = () => {
+    if (!routeRef.current) {
+      alert('Сначала постройте маршрут для сохранения');
+      return;
+    }
+    
+    // Проверяем авторизацию пользователя
+    if (!isAuthenticated || !currentUser || !currentUser.id) {
+      alert('Необходимо авторизоваться для сохранения маршрута');
+      return;
+    }
+    
+    console.log('Данные о пользователе при сохранении маршрута:', currentUser);
+    console.log('ID пользователя для сохранения:', currentUser.id);
+    
+    // Получаем название маршрута
+    const routeName = prompt('Введите название маршрута', 'Новый маршрут');
+    if (!routeName || !routeName.trim()) {
+      alert('Название маршрута не может быть пустым');
+      return; // Пользователь отменил операцию или ввел пустое имя
+    }
+
+    // Форматируем продолжительность в формат HH:MM:SS
+    const formatDuration = (seconds) => {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
+    // Формируем данные маршрута в соответствии с ожидаемым форматом API и mapPointsSlice
+    const routeData = {
+      name: routeName.trim(),
+      description: routeDescription.trim() || "",
+      location_area: "Россия Свердловская область",
+      duration: formatDuration(routeRef.current.duration),
+      chat_link: "http://127.0.0.1:8000/example/",
+      views: 0,
+      is_public: false,
+      length_in_km: routeRef.current.distance / 1000, // конвертируем метры в километры
+      height: routeRef.current.elevationGain || 0,
+      difficulty: 1, // базовая сложность
+      type: 1, // тип маршрута
+      coordinates: routeRef.current.coordinates,
+      waypoints: waypoints
+    };
+    
+    console.log('Данные маршрута для сохранения:', routeData);
+    console.log('ID пользователя:', currentUser.id);
+    
+    // Отправляем запрос на сохранение маршрута
+    dispatch(saveRouteThunk(routeData))
+      .unwrap()
+      .then(data => {
+        console.log('Маршрут успешно сохранен:', data);
+        alert('Маршрут успешно сохранен!');
+        setRouteName('');
+        setRouteDescription('');
+      })
+      .catch(error => {
+        console.error('Ошибка при сохранении маршрута:', error);
+        alert(`Ошибка при сохранении маршрута: ${error.message || error}`);
+      });
   };
 
   // Обработчик клика по карте для добавления точки
@@ -585,7 +615,7 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
   };
 
   // Функция для очистки маршрута
-  const clearRoute = () => {
+  const clearRouteHandler = () => {
     // Сбрасываем флаг построения маршрута
     isRouteBuildingRef.current = false;
     
@@ -603,10 +633,16 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
     setWaypoints([]);
     routeRef.current = null;
     
+    // Очищаем маршрут в Redux
+    dispatch(clearRoute());
+    
     // Вызываем колбэк с обнуленной информацией о маршруте
     if (onRouteUpdate) {
       onRouteUpdate(null);
     }
+    // Очищаем также имя и описание маршрута
+    setRouteName('');
+    setRouteDescription('');
   };
 
   // Добавляем кнопки управления
@@ -647,7 +683,7 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
     const clearRouteBtn = document.createElement('button');
     clearRouteBtn.className = styles.mapControlButton;
     clearRouteBtn.textContent = 'Очистить';
-    clearRouteBtn.addEventListener('click', clearRoute);
+    clearRouteBtn.addEventListener('click', clearRouteHandler);
     
     // Добавляем кнопки в контейнер
     controlContainer.appendChild(buildRouteBtn);
@@ -656,6 +692,15 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
     // Добавляем контейнер на карту
     mapContainer.current.appendChild(controlContainer);
   };
+
+  // Устанавливаем ошибку из Redux если она есть
+  useEffect(() => {
+    if (reduxError) {
+      setError(reduxError);
+    } else if (routeError) {
+      setError(routeError);
+    }
+  }, [reduxError, routeError]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -677,7 +722,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
     
     mapboxgl.accessToken = cleanMapboxToken;
     
-
     try {
       // Initialize map if not already initialized
       if (!map.current) {
@@ -709,15 +753,8 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
           map.current.on('click', handleMapClick);
           addControls();
           
-          // Загружаем и отображаем точки с сервера
-          try {
-            const locations = await fetchMapPoints();
-            if (locations && locations.length > 0) {
-              addLocationPoints(locations);
-            }
-          } catch (err) {
-            console.error('Ошибка при загрузке и отображении локаций:', err);
-          }
+          // Загружаем точки с помощью Redux
+          dispatch(fetchMapPoints());
         });
       }
     } catch (err) {
@@ -739,6 +776,13 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       }
     };
   }, []);
+
+  // Отображаем точки на карте, когда они загружены из Redux
+  useEffect(() => {
+    if (mapPoints && mapPoints.length > 0 && map.current && mapInitializedRef.current) {
+      addLocationPoints(mapPoints);
+    }
+  }, [mapPoints]);
 
   // Эффект, который срабатывает только при изменении точек маршрута
   useEffect(() => {
@@ -795,6 +839,11 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       {isLoading && (
         <div className={styles.mapLoading}>
           <span>Загрузка локаций...</span>
+        </div>
+      )}
+      {saveRouteLoading && (
+        <div className={styles.mapLoading}>
+          <span>Сохранение маршрута...</span>
         </div>
       )}
       <div ref={mapContainer} className={styles.map} />

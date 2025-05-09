@@ -287,4 +287,15 @@
   .forgotPasswordContainer {
     text-align: center;
   }
+}
+
+.errorMessage {
+  color: #ff5252;
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-weight: 500;
+  background-color: rgba(255, 82, 82, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: center;
 } 

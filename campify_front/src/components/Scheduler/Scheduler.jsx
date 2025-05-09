@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../Header/Header';
 import styles from './Scheduler.module.scss';
 import PlannerMap from '../Map/PlannerMap';
 import { createGPXFromCoordinates, gpxStringToBlob } from '../../utils/gpxUtils';
+import { saveRouteThunk } from '../../features/map/mapPointsSlice';
 
 const Scheduler = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [route, setRoute] = useState(null);
   const [routeName, setRouteName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -348,54 +351,51 @@ const Scheduler = () => {
         difficulty: difficulty ? difficulty.value : 1, // используем определенную сложность или базовую
         type: getPlaceTypeValue(), // 1 - обустроенный, 2 - дикий
         place_type: placeType, // текстовое значение для отображения
+        coordinates: route.coordinates // Добавляем координаты маршрута
       };
       
-      console.log('Отправляем данные маршрута:', routeData);
+      console.log('Отправляем данные маршрута через Redux:', routeData);
       
-      // Отправляем данные маршрута
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/routes/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(routeData),
-      });
+      // Используем Redux thunk для сохранения маршрута
+      const resultAction = await dispatch(saveRouteThunk(routeData));
       
-      if (!response.ok) {
-        throw new Error(`Ошибка при создании маршрута: ${response.status}`);
+      // Проверяем результат
+      if (saveRouteThunk.fulfilled.match(resultAction)) {
+        const result = resultAction.payload;
+        const routeId = result.id;
+        
+        console.log('Маршрут создан с ID:', routeId);
+        
+        // Создаем GPX файл из координат
+        const gpxString = createGPXFromCoordinates(route.coordinates, routeName);
+        const gpxBlob = gpxStringToBlob(gpxString);
+        
+        // Создаем FormData для отправки файла
+        const formData = new FormData();
+        formData.append('gpx_file', gpxBlob, `${routeName.replace(/\s+/g, '_')}.gpx`);
+        
+        // Отправляем GPX файл
+        const gpxResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/routes/${routeId}/upload_gpx/`, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!gpxResponse.ok) {
+          throw new Error(`Ошибка при загрузке GPX файла: ${gpxResponse.status}`);
+        }
+        
+        toast.success('Маршрут успешно сохранен!');
+        
+        // Небольшая задержка перед перенаправлением
+        setTimeout(() => {
+          navigate('/routes');
+          setIsLoading(false);
+        }, 2000);
+      } else {
+        // Обрабатываем ошибку, если запрос не удался
+        const errorMessage = resultAction.payload || 'Неизвестная ошибка при сохранении маршрута';
+        throw new Error(errorMessage);
       }
-      
-      const result = await response.json();
-      const routeId = result.id;
-      
-      console.log('Маршрут создан с ID:', routeId);
-      
-      // Создаем GPX файл из координат
-      const gpxString = createGPXFromCoordinates(route.coordinates, routeName);
-      const gpxBlob = gpxStringToBlob(gpxString);
-      
-      // Создаем FormData для отправки файла
-      const formData = new FormData();
-      formData.append('gpx_file', gpxBlob, `${routeName.replace(/\s+/g, '_')}.gpx`);
-      
-      // Отправляем GPX файл
-      const gpxResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/routes/${routeId}/upload_gpx/`, {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!gpxResponse.ok) {
-        throw new Error(`Ошибка при загрузке GPX файла: ${gpxResponse.status}`);
-      }
-      
-      toast.success('Маршрут успешно сохранен!');
-      
-      // Небольшая задержка перед перенаправлением
-      setTimeout(() => {
-        navigate('/routes');
-        setIsLoading(false);
-      }, 2000);
-      
     } catch (err) {
       console.error('Ошибка при сохранении маршрута:', err);
       setError(err.message);

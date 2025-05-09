@@ -504,10 +504,11 @@
 
 .commentsContainer {
   display: flex;
+  flex-direction: column;
   gap: 20px;
   
   @media screen and (max-width: $tablet) {
-    flex-direction: column;
+    gap: 15px;
   }
 }
 
@@ -626,10 +627,10 @@
 
 .commentHeader {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 15px;
+  gap: 5px;
   
   @media screen and (max-width: $mobile) {
     margin-bottom: 10px;
@@ -639,6 +640,7 @@
 .commentRating {
   display: flex;
   gap: 5px;
+  margin-bottom: 5px;
 }
 
 .ratingIcon {
@@ -670,33 +672,48 @@
 }
 
 .commentText {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
   color: #303030;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-height: 200px;
+  overflow-y: auto;
   
   @media screen and (max-width: $tablet) {
-    font-size: 20px;
+    font-size: 14px;
+    max-height: 150px;
   }
   
   @media screen and (max-width: $mobile) {
-    font-size: 16px;
+    font-size: 13px;
+    max-height: 120px;
   }
 }
 
 .commentAuthor {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #303030;
-  text-align: right;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   
   @media screen and (max-width: $tablet) {
-    font-size: 20px;
+    font-size: 16px;
   }
   
   @media screen and (max-width: $mobile) {
-    font-size: 18px;
+    font-size: 14px;
   }
+}
+
+.commentDate {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-left: 0;
 }
 
 .loading, .error {
@@ -782,5 +799,86 @@
 .noPhotos {
   color: #777;
   background-color: rgba(0, 0, 0, 0.05);
+  font-style: italic;
+}
+
+// Добавляем стили для горизонтального отображения отзывов
+.reviewsContainer {
+  position: relative;
+  width: 100%;
+  margin: 20px 0;
+}
+
+// Обновление стилей для контейнера с прокруткой
+.reviewsScrollContainer {
+  width: 100%;
+  overflow-x: auto;
+  padding: 20px 10px;
+  cursor: grab;
+  user-select: none; /* Предотвращаем выделение текста при перетаскивании */
+  
+  /* Скрываем полосу прокрутки для Chrome, Safari и Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Скрываем полосу прокрутки для IE, Edge и Firefox */
+  -ms-overflow-style: none;  /* IE и Edge */
+  scrollbar-width: none;  /* Firefox */
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    padding: 15px 5px;
+  }
+}
+
+.reviewsRow {
+  display: flex;
+  gap: 20px;
+  width: fit-content;
+  min-width: 100%;
+  padding-bottom: 10px;
+  pointer-events: none; /* Предотвращаем конфликт между перетаскиванием и выделением контента */
+  
+  /* Но разрешаем события для вложенных элементов, чтобы работали клики на кнопки внутри карточек */
+  & > * {
+    pointer-events: auto;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    gap: 15px;
+  }
+}
+
+.reviewCard {
+  flex: 0 0 auto;
+  width: 300px;
+  background-color: $white;
+  border-radius: 15px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  
+  @media screen and (max-width: $tablet) {
+    width: 250px;
+  }
+  
+  @media screen and (max-width: $mobile) {
+    width: 220px;
+    padding: 15px;
+  }
+}
+
+.reviewsCount {
+  text-align: right;
+  font-size: 14px;
+  color: #777;
+  margin-top: 10px;
   font-style: italic;
 } 

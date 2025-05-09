@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from './CardRoute.module.scss';
 import Header from '../Header/Header';
 import Map from '../Map/Map';
@@ -12,6 +13,8 @@ import { useRoutes } from '../../hooks/useRoutes';
 // import { ReactComponent as ClockIcon } from '../../assets/icons/clock-icon.svg';
 // import { ReactComponent as LevelIcon } from '../../assets/icons/level-icon.svg';
 import RouteMap from '../Map/RouteMap';
+import { fetchRouteReviews, createReview } from '../../store/slices/reviewsSlice';
+import { fetchUserById } from '../../store/slices/userSlice';
 
 const DownloadIcon = () => (
   <span className={styles.buttonIcon}>
@@ -37,6 +40,7 @@ const ChecklistIcon = () => (
 );
 
 export const CardRoute = () => {
+  const dispatch = useDispatch();
   const { id } = useParams();
   const { 
     currentRoute, 
@@ -58,6 +62,21 @@ export const CardRoute = () => {
     downloadError
   } = useRoutes();
   
+  // Получаем данные из Redux для отзывов
+  const { 
+    reviews, 
+    loading: reviewsLoading, 
+    error: reviewsError,
+    createReviewLoading,
+    createReviewError
+  } = useSelector(state => state.reviews);
+  
+  // Проверяем авторизацию пользователя
+  const { isAuthenticated } = useSelector(state => state.user);
+  
+  // Получаем данные из Redux для пользователей
+  const { usersCache } = useSelector(state => state.user);
+  
   // Состояние для хранения фотографий текущего маршрута
   const [photos, setPhotos] = useState([]);
   
@@ -66,14 +85,52 @@ export const CardRoute = () => {
   const [commentRating, setCommentRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   
-  // Загружаем маршрут при монтировании компонента
+  // Референс для контейнера с отзывами
+  const reviewsRowRef = useRef(null);
+  
+  // Состояния для реализации drag-to-scroll
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  
+  // Получаем отзывы для текущего маршрута и нормализуем их
+  const routeReviews = reviews[id] || [];
+  console.log('Отзывы для маршрута ID', id, ':', routeReviews);
+  
+  // Убедимся, что routeReviews всегда массив
+  const normalizedReviews = Array.isArray(routeReviews) ? routeReviews : [routeReviews];
+  console.log('Нормализованные отзывы:', normalizedReviews);
+  
+  // Загружаем маршрут, отзывы и информацию о пользователях при монтировании компонента
   useEffect(() => {
     if (id) {
       loadRouteById(id);
       loadRoutePhotos(id);
       loadRouteGpx(id);
+      // Загружаем отзывы для маршрута
+      dispatch(fetchRouteReviews(id));
+      console.log('Запрошены отзывы для маршрута ID:', id);
     }
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, dispatch]);
+  
+  // Эффект для загрузки информации о пользователях при получении отзывов
+  useEffect(() => {
+    if (normalizedReviews && normalizedReviews.length > 0) {
+      console.log('Загружаем информацию о пользователях для отзывов');
+      // Получаем уникальные ID пользователей из отзывов
+      const userIds = [...new Set(normalizedReviews
+        .filter(review => review && review.user)
+        .map(review => review.user))];
+      
+      // Загружаем информацию о каждом пользователе, если его нет в кэше
+      userIds.forEach(userId => {
+        if (!usersCache[userId]) {
+          dispatch(fetchUserById(userId));
+        }
+      });
+    }
+  }, [normalizedReviews, dispatch, usersCache]);
   
   // Обновляем фотографии, когда они загружены
   useEffect(() => {
@@ -127,6 +184,108 @@ export const CardRoute = () => {
   // Определяем фотографии для отображения (с учетом API структуры)
   const firstThreePhotos = photos.slice(0, 3);
 
+  // Функция для начала перетаскивания
+  const handleMouseDown = (e) => {
+    if (!reviewsRowRef.current) return;
+    
+    setIsDragging(true);
+    setStartX(e.pageX - reviewsRowRef.current.offsetLeft);
+    setScrollLeft(reviewsRowRef.current.scrollLeft);
+    reviewsRowRef.current.style.cursor = 'grabbing';
+  };
+  
+  // Функция для перетаскивания
+  const handleMouseMove = (e) => {
+    if (!isDragging || !reviewsRowRef.current) return;
+    
+    const x = e.pageX - reviewsRowRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Множитель скорости прокрутки
+    reviewsRowRef.current.scrollLeft = scrollLeft - walk;
+  };
+  
+  // Функция для завершения перетаскивания
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (reviewsRowRef.current) {
+      reviewsRowRef.current.style.cursor = 'grab';
+    }
+  };
+  
+  // Функция для отмены перетаскивания при выходе курсора за пределы контейнера
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      if (reviewsRowRef.current) {
+        reviewsRowRef.current.style.cursor = 'grab';
+      }
+    }
+  };
+
+  // Обработчик изменения текста комментария
+  const handleCommentTextChange = (e) => {
+    setCommentText(e.target.value);
+  };
+  
+  // Обработчик клика по звезде рейтинга
+  const handleRatingClick = (rating) => {
+    setCommentRating(rating);
+  };
+  
+  // Обработчики наведения на звезды для эффекта hover
+  const handleRatingMouseEnter = (rating) => {
+    setHoverRating(rating);
+  };
+  
+  const handleRatingMouseLeave = () => {
+    setHoverRating(0);
+  };
+  
+  // Обработчик отправки комментария (используем Redux thunk)
+  const handleSubmitComment = () => {
+    if (commentText.trim() === '' || commentRating === 0) {
+      alert('Пожалуйста, напишите комментарий и выберите рейтинг');
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      alert('Необходимо авторизоваться для добавления отзыва');
+      return;
+    }
+    
+    const reviewData = {
+      comment: commentText,
+      rating: commentRating,
+      routeId: id
+    };
+    
+    dispatch(createReview(reviewData))
+      .unwrap()
+      .then(() => {
+        // Если отзыв успешно создан, очищаем форму
+        setCommentText('');
+        setCommentRating(0);
+      })
+      .catch(error => {
+        console.error('Ошибка при создании отзыва:', error);
+        alert(`Ошибка при создании отзыва: ${error}`);
+      });
+  };
+
+  // Функция для получения username пользователя по ID
+  const getUsernameById = (userId) => {
+    if (!userId) return 'Пользователь';
+    
+    // Проверяем, есть ли пользователь в кэше
+    const user = usersCache[userId];
+    if (user) {
+      return user.username || 'Пользователь';
+    }
+    
+    // Если пользователя нет в кэше, запрашиваем информацию
+    dispatch(fetchUserById(userId));
+    return 'Загрузка...';
+  };
+
   // Рендерим разные компоненты в зависимости от количества фотографий
   const renderPhotoGrid = () => {
     if (photos.length === 0) {
@@ -174,45 +333,6 @@ export const CardRoute = () => {
         </div>
       </div>
     );
-  };
-
-  // Обработчик изменения текста комментария
-  const handleCommentTextChange = (e) => {
-    setCommentText(e.target.value);
-  };
-  
-  // Обработчик клика по звезде рейтинга
-  const handleRatingClick = (rating) => {
-    setCommentRating(rating);
-  };
-  
-  // Обработчики наведения на звезды для эффекта hover
-  const handleRatingMouseEnter = (rating) => {
-    setHoverRating(rating);
-  };
-  
-  const handleRatingMouseLeave = () => {
-    setHoverRating(0);
-  };
-  
-  // Обработчик отправки комментария
-  const handleSubmitComment = () => {
-    if (commentText.trim() === '' || commentRating === 0) {
-      alert('Пожалуйста, напишите комментарий и выберите рейтинг');
-      return;
-    }
-    
-    // Здесь будет код для отправки комментария на бэкенд
-    // Пока просто выводим в консоль
-    console.log('Отправка комментария:', {
-      text: commentText,
-      rating: commentRating,
-      routeId: id
-    });
-    
-    // Сбрасываем форму
-    setCommentText('');
-    setCommentRating(0);
   };
 
   return (
@@ -330,15 +450,16 @@ export const CardRoute = () => {
             </div>
             
             <div className={styles.commentsSection}>
-              <h2 className={styles.sectionTitle}>Комментарии</h2>
+              <h2 className={styles.sectionTitle}>Отзывы</h2>
               <div className={styles.commentsContainer}>
                 <div className={styles.commentForm}>
                   <input 
                     type="text" 
-                    placeholder="Оставьте ваш комментарий..." 
+                    placeholder="Оставьте ваш отзыв..." 
                     className={styles.commentInput}
                     value={commentText}
                     onChange={handleCommentTextChange}
+                    disabled={!isAuthenticated || createReviewLoading}
                   />
                   <div className={styles.ratingContainer}>
                     {Array(5).fill(0).map((_, i) => (
@@ -354,36 +475,80 @@ export const CardRoute = () => {
                   <button 
                     className={styles.submitButton}
                     onClick={handleSubmitComment}
-                    disabled={commentText.trim() === '' || commentRating === 0}
+                    disabled={!isAuthenticated || commentText.trim() === '' || commentRating === 0 || createReviewLoading}
                   >
-                    Отправить
+                    {createReviewLoading ? 'Отправка...' : 'Отправить'}
                   </button>
                 </div>
                 
-                <div className={styles.commentsList}>
-                  {routeData.comments && routeData.comments.map((comment) => (
-                    <div key={comment.id} className={styles.commentItem}>
-                      <div className={styles.commentHeader}>
-                        <div className={styles.commentRating}>
-                          {Array(5).fill(0).map((_, i) => (
-                            <span 
-                              key={i} 
-                              className={`${styles.ratingIcon} ${i < comment.rating ? styles.active : ''}`}
-                            ></span>
-                          ))}
+                {createReviewError && (
+                  <div className={styles.error}>
+                    Ошибка при отправке отзыва: {createReviewError}
+                  </div>
+                )}
+                
+                {reviewsLoading ? (
+                  <div className={styles.loading}>Загрузка отзывов...</div>
+                ) : reviewsError ? (
+                  <div className={styles.error}>Ошибка при загрузке отзывов: {reviewsError}</div>
+                ) : (
+                  <div className={styles.reviewsContainer}>
+                    {normalizedReviews && normalizedReviews.length > 0 ? (
+                      <>
+                        <div 
+                          className={styles.reviewsScrollContainer} 
+                          ref={reviewsRowRef}
+                          onMouseDown={handleMouseDown}
+                          onMouseMove={handleMouseMove}
+                          onMouseUp={handleMouseUp}
+                          onMouseLeave={handleMouseLeave}
+                        >
+                          <div className={styles.reviewsRow}>
+                            {normalizedReviews.map((review) => {
+                              // Проверяем наличие необходимых полей
+                              if (!review) return null;
+                              
+                              // Получаем username пользователя
+                              const username = getUsernameById(review.user);
+                              
+                              return (
+                                <div key={review.id || Math.random()} className={styles.reviewCard}>
+                                  <div className={styles.commentHeader}>
+                                    <div className={styles.commentRating}>
+                                      {Array(5).fill(0).map((_, i) => (
+                                        <span 
+                                          key={i} 
+                                          className={`${styles.ratingIcon} ${i < (review.rating || 0) ? styles.active : ''}`}
+                                        ></span>
+                                      ))}
+                                    </div>
+                                    <span className={styles.commentAuthor}>
+                                      {username}
+                                    </span>
+                                    {review.created_at && (
+                                      <span className={styles.commentDate}>
+                                        {new Date(review.created_at).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className={styles.commentText}>{review.comment || review.text || 'Без комментария'}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <span className={styles.commentAuthor}>{comment.author}</span>
+                        
+                        <div className={styles.reviewsCount}>
+                          Всего отзывов: {normalizedReviews.length}
+                        </div>
+                      </>
+                    ) : (
+                      <div className={styles.noComments}>
+                        Пока нет отзывов. Будьте первым!
                       </div>
-                      <p className={styles.commentText}>{comment.text}</p>
-                    </div>
-                  ))}
-                  
-                  {(!routeData.comments || routeData.comments.length === 0) && (
-                    <div className={styles.noComments}>
-                      Пока нет комментариев. Будьте первым!
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

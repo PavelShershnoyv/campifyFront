@@ -1,7 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  loginUser, 
+  loginUser,
+  registerUser,
+  getCSRFToken,
   logout, 
+  clearErrors,
+  resetRegisterSuccess,
   addToFavorites, 
   removeFromFavorites,
   updateUserProfile 
@@ -13,18 +17,41 @@ export const useUser = () => {
     currentUser, 
     isAuthenticated, 
     loading, 
+    csrfLoading,
     error,
-    favorites 
+    csrfError,
+    registerSuccess,
+    favorites
   } = useSelector(state => state.user);
 
+  // Получение CSRF-токена
+  const getCsrfToken = async () => {
+    return dispatch(getCSRFToken());
+  };
+
+  // Регистрация пользователя
+  const register = async (userData) => {
+    return dispatch(registerUser(userData));
+  };
+
   // Авторизация пользователя
-  const login = (credentials) => {
+  const login = async (credentials) => {
     return dispatch(loginUser(credentials));
   };
 
   // Выход из системы
   const logoutUser = () => {
     dispatch(logout());
+  };
+
+  // Очистка ошибок
+  const clearUserErrors = () => {
+    dispatch(clearErrors());
+  };
+
+  // Сброс успешной регистрации
+  const resetRegistrationSuccess = () => {
+    dispatch(resetRegisterSuccess());
   };
 
   // Добавление маршрута в избранное
@@ -51,10 +78,17 @@ export const useUser = () => {
     currentUser,
     isAuthenticated,
     loading,
+    csrfLoading,
     error,
+    csrfError,
+    registerSuccess,
     favorites,
+    getCsrfToken,
+    register,
     login,
     logoutUser,
+    clearUserErrors,
+    resetRegistrationSuccess,
     addRouteToFavorites,
     removeRouteFromFavorites,
     updateProfile,
