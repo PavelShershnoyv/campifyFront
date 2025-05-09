@@ -6,6 +6,7 @@ import {
   fetchRoutePhotos,
   fetchRouteGpx,
   downloadRouteGpx,
+  downloadRouteChecklist,
   setCurrentRoute, 
   filterRoutes,
   addComment 
@@ -22,10 +23,12 @@ export const useRoutes = () => {
     photosLoading,
     gpxLoading,
     downloadLoading,
+    checklistDownloadLoading,
     error,
     photosError,
     gpxError,
     downloadError,
+    checklistDownloadError,
     wildRoutes,
     equippedRoutes
   } = useSelector(state => state.routes);
@@ -53,6 +56,11 @@ export const useRoutes = () => {
   // Скачивание GPX файла маршрута по ID
   const downloadGpxFile = (routeId) => {
     dispatch(downloadRouteGpx(routeId));
+  };
+
+  // Скачивание чек-листа маршрута по ID
+  const downloadChecklistFile = (routeId) => {
+    dispatch(downloadRouteChecklist(routeId));
   };
 
   // Получение фотографий для конкретного маршрута
@@ -109,15 +117,18 @@ export const useRoutes = () => {
     photosLoading,
     gpxLoading,
     downloadLoading,
+    checklistDownloadLoading,
     error,
     photosError,
     gpxError,
     downloadError,
+    checklistDownloadError,
     loadRoutes,
     loadRouteById,
     loadRoutePhotos,
     loadRouteGpx,
     downloadGpxFile,
+    downloadChecklistFile,
     getRoutePhotos,
     getRouteGpxData,
     selectRoute,

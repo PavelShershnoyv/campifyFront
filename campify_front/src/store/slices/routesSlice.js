@@ -242,6 +242,40 @@ export const updateRoutePublicStatus = createAsyncThunk(
   }
 );
 
+// Асинхронный action для скачивания чек-листа маршрута по ID
+export const downloadRouteChecklist = createAsyncThunk(
+  'routes/downloadRouteChecklist',
+  async (routeId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/routes/${routeId}/checklist/`);
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      // Получаем файл как Blob
+      const blob = await response.blob();
+      
+      // Создаем временную ссылку для скачивания файла
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `checklist-route-${routeId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Очищаем ресурсы
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return { success: true };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   routes: [],
   wildRoutes: [],
@@ -257,6 +291,8 @@ const initialState = {
   photosError: null, // Отдельное состояние ошибки для фотографий
   gpxError: null, // Отдельное состояние ошибки для GPX-данных
   downloadError: null, // Состояние ошибки для скачивания GPX файла
+  checklistDownloadLoading: false, // Состояние загрузки для скачивания чек-листа
+  checklistDownloadError: null, // Состояние ошибки для скачивания чек-листа
 };
 
 const routesSlice = createSlice({
@@ -375,6 +411,19 @@ const routesSlice = createSlice({
       .addCase(updateRoutePublicStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      
+      // Обработчики для downloadRouteChecklist
+      .addCase(downloadRouteChecklist.pending, (state) => {
+        state.checklistDownloadLoading = true;
+        state.checklistDownloadError = null;
+      })
+      .addCase(downloadRouteChecklist.fulfilled, (state) => {
+        state.checklistDownloadLoading = false;
+      })
+      .addCase(downloadRouteChecklist.rejected, (state, action) => {
+        state.checklistDownloadLoading = false;
+        state.checklistDownloadError = action.payload;
       });
   },
 });

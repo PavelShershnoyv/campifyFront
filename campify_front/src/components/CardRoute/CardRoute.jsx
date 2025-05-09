@@ -59,7 +59,10 @@ export const CardRoute = () => {
     gpxError,
     downloadGpxFile,
     downloadLoading,
-    downloadError
+    downloadError,
+    downloadChecklistFile,
+    checklistDownloadLoading,
+    checklistDownloadError
   } = useRoutes();
   
   // Получаем данные из Redux для отзывов
@@ -374,9 +377,13 @@ export const CardRoute = () => {
                     <DownloadIcon />
                     {downloadLoading ? 'Загрузка...' : 'Скачать'}
                   </button>
-                  <button className={styles.checklistButton}>
+                  <button 
+                    className={styles.checklistButton}
+                    onClick={() => downloadChecklistFile(id)}
+                    disabled={checklistDownloadLoading}
+                  >
                     <ChecklistIcon />
-                    Чек-лист
+                    {checklistDownloadLoading ? 'Загрузка...' : 'Чек-лист'}
                   </button>
                 </div>
               </div>

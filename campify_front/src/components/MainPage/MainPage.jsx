@@ -9,6 +9,7 @@ import trekking from "../../assets/img/Trekking.png";
 import arrow from "../../assets/icon/Arrow.png";
 import leftImage from "../../assets/img/LeftCellRoute.jpg";
 import rightImage from "../../assets/img/RightCellRoute.png";
+import { Link } from "react-router-dom";
 
 const MainPage = () => {
   return (
@@ -29,13 +30,15 @@ const MainPage = () => {
               </p>
             </div>
             <div className={classes.mainBlock__block__startRoute}>
-              <div className={classes.mainBlock__block__startRoute__img}>
-                <div className={classes.mainBlock__block__startRoute__img__header}>
-                  <p>Подробнее</p>
+              <Link to="/route-details/1">
+                <div className={classes.mainBlock__block__startRoute__img}>
+                  <div className={classes.mainBlock__block__startRoute__img__header}>
+                    <p>Подробнее</p>
                   <img src={arrow} alt="Arrow icon" />
                 </div>
                 <img src={trekking} alt="Trekking" />
               </div>
+              </Link>
               <div className={classes.mainBlock__block__startRoute__description}>
                 <p>
                   Откройте природу

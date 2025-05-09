@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Header from '../Header/Header';
 import BigCellRoute from '../BigCellRoute/BigCellRoute';
 import CellRoute from '../CellRoute/CellRoute';
+import Modal from '../Modal/Modal';
 import styles from './MyRoutesPage.module.scss';
 import filterIcon from '../../assets/icon/Filter.png';
 import leftImage from '../../assets/img/LeftCellRoute.jpg';
@@ -21,6 +22,24 @@ const MyRoutesPage = () => {
   // Состояние для активной вкладки (дикие/обустроенные)
   const [activeTab, setActiveTab] = useState('wild');
   
+  // Состояния для модальных окон
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    routeId: null
+  });
+  
+  const [shareModal, setShareModal] = useState({
+    isOpen: false,
+    routeId: null
+  });
+  
+  const [resultModal, setResultModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
+  
   // Загрузка маршрутов пользователя при монтировании компонента
   useEffect(() => {
     console.log('MyRoutesPage - Проверка авторизации:', isAuthenticated);
@@ -35,36 +54,68 @@ const MyRoutesPage = () => {
     }
   }, [dispatch, isAuthenticated, currentUser, navigate]);
 
+  // Показать модальное окно для подтверждения удаления
+  const showDeleteConfirmation = (routeId) => {
+    setDeleteModal({
+      isOpen: true,
+      routeId
+    });
+  };
+  
+  // Показать модальное окно для подтверждения публикации
+  const showShareConfirmation = (routeId) => {
+    setShareModal({
+      isOpen: true,
+      routeId
+    });
+  };
+  
+  // Показать модальное окно с результатом операции
+  const showResultModal = (title, message, type = 'info') => {
+    setResultModal({
+      isOpen: true,
+      title,
+      message,
+      type
+    });
+  };
+
   // Обработчик удаления маршрута
-  const handleDeleteRoute = (routeId) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот маршрут?')) {
-      dispatch(deleteRouteThunk(routeId))
-        .unwrap()
-        .then(() => {
-          console.log(`Маршрут с ID: ${routeId} успешно удален`);
-        })
-        .catch(error => {
-          console.error(`Ошибка при удалении маршрута: ${error}`);
-          alert(`Ошибка при удалении маршрута: ${error}`);
-        });
-    }
+  const handleDeleteRoute = () => {
+    const routeId = deleteModal.routeId;
+    
+    setDeleteModal({ isOpen: false, routeId: null });
+    
+    dispatch(deleteRouteThunk(routeId))
+      .unwrap()
+      .then(() => {
+        console.log(`Маршрут с ID: ${routeId} успешно удален`);
+        showResultModal('Успешно', 'Маршрут успешно удален.', 'success');
+      })
+      .catch(error => {
+        console.error(`Ошибка при удалении маршрута: ${error}`);
+        showResultModal('Ошибка', `Не удалось удалить маршрут: ${error}`, 'error');
+      });
   };
 
   // Обработчик публикации маршрута
-  const handleShareRoute = (routeId) => {
-    if (window.confirm('Вы уверены, что хотите опубликовать этот маршрут? После публикации он будет доступен всем пользователям.')) {
-      dispatch(updateRoutePublicStatus({ routeId, isPublic: true }))
-        .unwrap()
-        .then(() => {
-          console.log(`Маршрут с ID: ${routeId} успешно опубликован`);
-          // Обновляем список маршрутов пользователя
-          dispatch(fetchUserRoutesThunk(currentUser.id));
-        })
-        .catch(error => {
-          console.error(`Ошибка при публикации маршрута: ${error}`);
-          alert(`Ошибка при публикации маршрута: ${error}`);
-        });
-    }
+  const handleShareRoute = () => {
+    const routeId = shareModal.routeId;
+    
+    setShareModal({ isOpen: false, routeId: null });
+    
+    dispatch(updateRoutePublicStatus({ routeId, isPublic: true }))
+      .unwrap()
+      .then(() => {
+        console.log(`Маршрут с ID: ${routeId} успешно опубликован`);
+        // Обновляем список маршрутов пользователя
+        dispatch(fetchUserRoutesThunk(currentUser.id));
+        showResultModal('Успешно', 'Маршрут успешно опубликован! Теперь он доступен всем пользователям.', 'success');
+      })
+      .catch(error => {
+        console.error(`Ошибка при публикации маршрута: ${error}`);
+        showResultModal('Ошибка', `Не удалось опубликовать маршрут: ${error}`, 'error');
+      });
   };
 
   // Разделение маршрутов на дикие и обустроенные
@@ -209,9 +260,9 @@ const MyRoutesPage = () => {
                   time={formatDuration(mainRoute.duration)}
                   rating={mainRoute.rating || 5.0}
                   isUserRoute={true}
-                  onDelete={() => handleDeleteRoute(mainRoute.id)}
+                  onDelete={() => showDeleteConfirmation(mainRoute.id)}
                   isPublic={mainRoute.is_public}
-                  onShare={() => handleShareRoute(mainRoute.id)}
+                  onShare={() => showShareConfirmation(mainRoute.id)}
                   link={`/route-details/${mainRoute.id}`}
                 />
               </div>
@@ -232,15 +283,56 @@ const MyRoutesPage = () => {
                              route.difficulty === 2 ? "Средний" : "Сложный"}
                   imagePosition={index % 2 !== 0 ? "right" : "left"}
                   isUserRoute={true}
-                  onDelete={() => handleDeleteRoute(route.id)}
+                  onDelete={() => showDeleteConfirmation(route.id)}
                   isPublic={route.is_public}
-                  onShare={() => handleShareRoute(route.id)}
+                  onShare={() => showShareConfirmation(route.id)}
                   link={`/route-details/${route.id}`}
                 />
               </div>
             ))}
           </>
         )}
+        
+        {/* Модальное окно подтверждения удаления */}
+        <Modal
+          isOpen={deleteModal.isOpen}
+          onClose={() => setDeleteModal({ isOpen: false, routeId: null })}
+          title="Удаление маршрута"
+          message="Вы уверены, что хотите удалить этот маршрут? Это действие невозможно отменить."
+          buttons={{
+            confirm: "Удалить",
+            cancel: "Отмена"
+          }}
+          onConfirm={handleDeleteRoute}
+          type="warning"
+        />
+        
+        {/* Модальное окно подтверждения публикации */}
+        <Modal
+          isOpen={shareModal.isOpen}
+          onClose={() => setShareModal({ isOpen: false, routeId: null })}
+          title="Публикация маршрута"
+          message="Вы уверены, что хотите опубликовать этот маршрут? После публикации он будет доступен всем пользователям."
+          buttons={{
+            confirm: "Опубликовать",
+            cancel: "Отмена"
+          }}
+          onConfirm={handleShareRoute}
+          type="info"
+        />
+        
+        {/* Модальное окно с результатом операции */}
+        <Modal
+          isOpen={resultModal.isOpen}
+          onClose={() => setResultModal({ ...resultModal, isOpen: false })}
+          title={resultModal.title}
+          message={resultModal.message}
+          buttons={{
+            confirm: "ОК",
+            cancel: null
+          }}
+          type={resultModal.type}
+        />
       </div>
     </div>
   );
