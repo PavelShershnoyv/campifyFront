@@ -57,9 +57,20 @@
   border-radius: 15px 15px 0 0;
 }
 
-.waypointMarker {
+.markerContainer {
+  position: relative;
   width: 30px;
   height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.waypointMarker, .startMarker {
+  width: 32px;
+  height: 32px;
   background-color: #ff6b35;
   border-radius: 50%;
   border: 3px solid #fff;
@@ -70,13 +81,21 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  position: relative;
-  transform: translate(-50%, -50%);
   z-index: 5;
-  
-  &:active {
-    cursor: pointer;
-  }
+  position: relative;
+  font-size: 18px;
+}
+
+.startMarker {
+  background-color: #4CAF50;
+}
+
+.waypointMarker {
+  background-color: #ff6b35;
+}
+
+.startMarker::before {
+  content: none;
 }
 
 .locationMarker {
@@ -93,7 +112,6 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  transform: translate(-50%, -50%);
   z-index: 4;
   
   &:active {
@@ -102,43 +120,7 @@
   
   &:hover {
     background-color: #1976D2;
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-}
-
-.startMarker {
-  width: 34px;
-  height: 34px;
-  background-color: #4CAF50;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  color: white;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-  position: relative;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-  
-  &:active {
-    cursor: pointer;
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid #4CAF50;
+    transform: scale(1.05);
   }
 }
 
@@ -289,60 +271,34 @@
 .searchMarkerPin {
   width: 30px;
   height: 30px;
-  background-color: #E91E63;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  position: relative;
-  left: 5px;
-  top: 10px;
-  border: 3px solid #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background-color: white;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 10px 5px 0 5px;
-    border-color: #E91E63 transparent transparent transparent;
-    left: 7px;
-    bottom: -9px;
-    transform: rotate(45deg);
-  }
+  background-color: #FF4081;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 
 .pulseContainer {
   position: relative;
   width: 30px;
   height: 30px;
-  transform: translateY(-15px);
   
-  &::before {
+  &::after {
     content: '';
     position: absolute;
+    top: 50%;
+    left: 50%;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(233, 30, 99, 0.4);
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -55%);
-    animation: pulse 1.5s ease-out infinite;
+    background-color: rgba(255, 64, 129, 0.4);
+    transform: translate(-50%, -50%);
     z-index: 1;
+    animation: pulse 1.5s infinite;
   }
 }
 

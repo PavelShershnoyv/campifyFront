@@ -450,7 +450,7 @@ const Scheduler = () => {
         <div className={styles.instructionContainer}>
           <div className={styles.instructionStep}>
             <div className={styles.stepNumber}>1</div>
-            <div className={styles.stepText}>Нажмите на карту, чтобы установить начальную точку (зеленый маркер)</div>
+            <div className={styles.stepText}>Нажмите на карту, чтобы установить начальную точку</div>
           </div>
           <div className={styles.instructionStep}>
             <div className={styles.stepNumber}>2</div>
