@@ -36,6 +36,7 @@ const Scheduler = () => {
   useEffect(() => {
     // Проверяем авторизацию при загрузке компонента
     if (!isAuthenticated) {
+      console.log("Авторизован: " + isAuthenticated);
       setShowAuthModal(true);
     }
   }, [isAuthenticated]);
@@ -440,6 +441,162 @@ const Scheduler = () => {
   return (
     <div className={styles.wrapper}>
       <Header />
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Планирование маршрута</h1>
+          <p className={styles.subtitle}>Создайте маршрут, кликая по карте для добавления точек</p>
+        </div>
+        
+        <div className={styles.instructionContainer}>
+          <div className={styles.instructionStep}>
+            <div className={styles.stepNumber}>1</div>
+            <div className={styles.stepText}>Нажмите на карту, чтобы установить начальную точку (зеленый маркер)</div>
+          </div>
+          <div className={styles.instructionStep}>
+            <div className={styles.stepNumber}>2</div>
+            <div className={styles.stepText}>Добавьте еще точки, чтобы создать маршрут</div>
+          </div>
+          <div className={styles.instructionStep}>
+            <div className={styles.stepNumber}>3</div>
+            <div className={styles.stepText}>Нажмите "Построить маршрут", чтобы увидеть оптимальный путь</div>
+          </div>
+        </div>
+        
+        <div className={styles.schedulerContainer}>
+          <div className={styles.mapSection}>
+            <div className={styles.searchInputs}>
+              <div className={styles.inputContainer}>
+                <input 
+                  type="text" 
+                  placeholder="Введите название маршрута" 
+                  className={styles.routeNameInput}
+                  value={routeName}
+                  onChange={(e) => setRouteName(e.target.value)}
+                  required
+                />
+                {error && <div className={styles.errorMessage}>{error}</div>}
+              </div>
+              
+              <div className={styles.searchRow}>
+                <div className={styles.inputWithIcon}>
+                  <div className={styles.searchIcon}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M21 21L16.65 16.65" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Поиск места или адреса" 
+                    className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    onFocus={() => setShowResults(true)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {isSearching && (
+                    <div className={styles.searchSpinner}>
+                      <div className={styles.spinner}></div>
+                    </div>
+                  )}
+                  {showResults && searchResults.length > 0 && (
+                    <div className={styles.searchResults}>
+                      {searchResults.map((result) => (
+                        <div 
+                          key={result.id || result.name} 
+                          className={styles.searchResultItem}
+                          onClick={() => handleSearchResultClick(result)}
+                        >
+                          <div className={styles.resultName}>{result.name}</div>
+                          {result.description && <div className={styles.resultDescription}>{result.description}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button 
+                  className={styles.searchButton} 
+                  onClick={handleSearchButtonClick}
+                  disabled={isSearching}
+                >
+                  Найти
+                </button>
+              </div>
+            </div>
+            
+            <div className={styles.mapContainer}>
+              <PlannerMap onRouteUpdate={handleRouteCreated} ref={mapRef} />
+            </div>
+          </div>
+          
+          <div className={styles.infoSection}>
+            <h2 className={styles.infoTitle}>Характеристика</h2>
+            
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Дистанция</span>
+              <span>{route ? formatDistance(route.distance) : '-- км'}</span>
+            </div>
+            
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Время</span>
+              <span>{route ? formatDuration(route.duration) : '-- ч'}</span>
+            </div>
+            
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Набор высоты</span>
+              <span>{route && route.elevationGain ? `${route.elevationGain} м` : '-- м'}</span>
+            </div>
+            
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Сложность</span>
+              <span>{difficulty ? difficulty.label : '--'}</span>
+            </div>
+            
+            <div className={styles.infoItem}>
+              <span className={styles.infoLabel}>Регион</span>               
+              <span>{locationArea || 'Определяется...'}</span>
+            </div>
+
+            <button 
+              className={`${styles.saveButton} ${isLoading ? styles.loading : ''}`} 
+              onClick={handleSave}
+              disabled={isLoading || !route || !routeName.trim() || !placeDescription.trim() || !placeType}
+            >
+              {isLoading ? 'Сохранение...' : 'Сохранить'}
+            </button>
+          </div>
+        </div>
+        
+        <div className={styles.placeTypeContainer}>
+          <h2 className={styles.placeTypeTitle}>Описание</h2>
+          <div className={styles.placeTypeWrapper}>
+            <input 
+              type="text" 
+              placeholder="Расскажите про это место" 
+              className={styles.placeDescription}
+              value={placeDescription}
+              onChange={(e) => setPlaceDescription(e.target.value)}
+              required
+            />
+            
+            <div className={styles.placeTypeButtons}>
+              <button 
+                className={`${styles.placeTypeButton} ${placeType === 'Обустроенный' ? styles.active : ''}`}
+                onClick={() => setPlaceType('Обустроенный')}
+              >
+                Обустроенный
+              </button>
+              <button 
+                className={`${styles.placeTypeButton} ${placeType === 'Дикий' ? styles.active : ''}`}
+                onClick={() => setPlaceType('Дикий')}
+              >
+                Дикий
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <AuthRequiredModal 
         isOpen={showAuthModal} 
         onClose={handleCloseAuthModal} 

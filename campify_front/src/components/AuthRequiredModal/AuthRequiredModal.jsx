@@ -9,6 +9,7 @@ const AuthRequiredModal = ({ isOpen, onClose }) => {
 
   const handleRegister = () => {
     navigate('/registration');
+    // onClose();
   };
 
   const handleClose = () => {
