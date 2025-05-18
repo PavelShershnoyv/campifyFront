@@ -1,0 +1,166 @@
+@import '../../variables.scss';
+
+.aboutPage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  
+  &__background {
+    flex: 1;
+    background-color: #619766;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__content {
+    flex: 1;
+    padding: 50px 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+}
+
+.contentCard {
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 35px 50px;
+  width: 100%;
+  max-width: 1164px;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 48px;
+  color: #619766;
+  font-weight: 700;
+  margin-bottom: 50px;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+}
+
+.text {
+  font-size: 24px;
+  line-height: 1.2;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  
+  p {
+    color: #619766;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+}
+
+.boldText {
+  font-weight: 900;
+}
+
+.subtitle {
+  color: #619766;
+  font-weight: 700;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.valuesList {
+  list-style-type: disc;
+  padding-left: 20px;
+  color: #619766;
+  
+  li {
+    margin-bottom: 15px;
+    
+    p {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+}
+
+.valueName {
+  font-weight: 700;
+  color: #619766;
+  font-size: 24px;
+}
+
+/* Адаптивная верстка */
+@media (max-width: 1200px) {
+  .contentCard {
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .aboutPage {
+    &__content {
+      padding: 30px 0;
+    }
+  }
+  
+  .contentCard {
+    padding: 25px 30px;
+  }
+  
+  .title {
+    font-size: 36px;
+    margin-bottom: 30px;
+  }
+  
+  .text {
+    font-size: 20px;
+    line-height: 1.2;
+    
+    p {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+  }
+  
+  .subtitle {
+    font-size: 20px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+  }
+  
+  .valueName {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .aboutPage {
+    &__content {
+      padding: 20px 0;
+    }
+  }
+  
+  .contentCard {
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  
+  .text {
+    font-size: 16px;
+    line-height: 1.2;
+    
+    p {
+      font-size: 16px;
+    }
+  }
+  
+  .subtitle {
+    font-size: 16px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+  }
+  
+  .valueName {
+    font-size: 16px;
+  }
+} 

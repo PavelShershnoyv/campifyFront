@@ -1,0 +1,107 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 50px 40px;
+  width: 549px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 48px;
+  color: #619766;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.modalText {
+  font-family: 'Poppins', Arial, sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: #619766;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.registerButton {
+  background-color: #DBAB49;
+  color: #FFFFFF;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  border-radius: 15px;
+  border: none;
+  padding: 18px 20px;
+  width: 310px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: darken(#DBAB49, 5%);
+  }
+}
+
+.cancelButton {
+  background: none;
+  border: none;
+  color: #619766;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 576px) {
+  .modalContent {
+    padding: 30px 20px;
+  }
+
+  .modalTitle {
+    font-size: 32px;
+  }
+
+  .modalText {
+    font-size: 16px;
+  }
+
+  .registerButton {
+    width: 100%;
+    font-size: 18px;
+  }
+
+  .cancelButton {
+    font-size: 16px;
+  }
+} 

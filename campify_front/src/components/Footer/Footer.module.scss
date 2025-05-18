@@ -1,131 +1,112 @@
 .footer {
   background-color: #619766;
-  padding: 40px 0;
+  padding: 20px 0 25px;
   color: #fff;
 }
 
 .container {
-  max-width: 1377px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 15px;
-}
-
-.content {
+  padding: 0 40px;
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.about {
-  max-width: 471px;
-  margin-bottom: 20px;
+.footerContent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.logoContainer {
+  width: 144px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  margin-right: 100px;
 }
 
 .logo {
-  font-family: 'Arial', sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  color: #ffffff;
-  margin-bottom: 24px;
-}
-
-.social {
-  display: flex;
-  gap: 24px;
-}
-
-.socialLink {
-  text-decoration: none;
+  max-width: 100%;
+  height: auto;
   display: block;
 }
 
-.socialIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 1px solid #dbab49;
+.navigation {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s;
-  cursor: pointer;
+  gap: 90px;
+}
+
+.navLink {
+  color: #ffffff;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  text-decoration: none;
+  line-height: 24px;
+  transition: opacity 0.3s;
   
   &:hover {
-    background-color: rgba(219, 171, 73, 0.1);
-  }
-}
-
-.iconInner {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.menu {
-  margin-bottom: 20px;
-}
-
-.menuTitle {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  line-height: 28px;
-  color: #ffffff;
-  margin-bottom: 24px;
-}
-
-.menuList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menuItem {
-  margin-bottom: 12px;
-}
-
-.menuLink {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 32px;
-  color: #a4aac1;
-  text-decoration: none;
-  transition: color 0.3s;
-  cursor: pointer;
-  display: inline-block;
-
-  &:hover {
-    color: #ffffff;
+    opacity: 0.8;
   }
 }
 
 .copyright {
   padding-top: 20px;
-  border-top: 1px solid #444444;
-  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
 }
 
 .copyrightText {
-  font-size: 14px;
-  color: #999999;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
 }
 
-/* Responsive styles */
-@media (max-width: 1200px) {
-  .content {
-    justify-content: flex-start;
-    gap: 40px;
-  }
-}
-
+/* Адаптивная верстка */
 @media (max-width: 768px) {
-  .content {
+  .footerContent {
     flex-direction: column;
-    gap: 30px;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .logoContainer {
+    width: 120px;
+    margin-right: 0;
   }
   
-  .about, .menu {
-    width: 100%;
+  .navigation {
+    gap: 40px;
+  }
+  
+  .navLink {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 20px;
+  }
+  
+  .logoContainer {
+    width: 100px;
+  }
+  
+  .navigation {
+    gap: 20px;
+    flex-direction: column;
+  }
+  
+  .navLink {
+    font-size: 18px;
+  }
+  
+  .copyrightText {
+    font-size: 14px;
+    text-align: center;
   }
 } 

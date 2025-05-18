@@ -16,7 +16,7 @@ const Header = () => {
         {isAuthenticated && (
           <Link to="/my-routes"><p>Мои маршруты</p></Link>
         )}
-        <p>О нас</p>
+        <Link to="/about"><p>О нас</p></Link>
       </div>
       <div className={classes.header__entrance}>
         {isAuthenticated ? (

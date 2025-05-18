@@ -10,6 +10,7 @@ import Scheduler from "./components/Scheduler/Scheduler";
 import CardRoute from "./components/CardRoute/CardRoute";
 import RegisterPage from "./components/RegisterPage/RegisterPage";
 import AuthPage from "./components/AuthPage/AuthPage";
+import AboutUsPage from "./components/AboutUsPage/AboutUsPage";
 
 function App() {
   const location = useLocation();
@@ -26,6 +27,7 @@ function App() {
         <Route path="/route-details/:id" element={<CardRoute />} />
         <Route path="/registration" element={<RegisterPage />} />
         <Route path="/login" element={<AuthPage />} />
+        <Route path="/about" element={<AboutUsPage />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </div>
