@@ -15,6 +15,8 @@ import { useRoutes } from '../../hooks/useRoutes';
 import RouteMap from '../Map/RouteMap';
 import { fetchRouteReviews, createReview } from '../../store/slices/reviewsSlice';
 import { fetchUserById } from '../../store/slices/userSlice';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const DownloadIcon = () => (
   <span className={styles.buttonIcon}>
@@ -62,7 +64,10 @@ export const CardRoute = () => {
     downloadError,
     downloadChecklistFile,
     checklistDownloadLoading,
-    checklistDownloadError
+    checklistDownloadError,
+    uploadPhoto,
+    photoUploadLoading,
+    photoUploadError
   } = useRoutes();
   
   // Получаем данные из Redux для отзывов
@@ -87,6 +92,16 @@ export const CardRoute = () => {
   const [commentText, setCommentText] = useState('');
   const [commentRating, setCommentRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  
+  // Состояния для загрузки фото
+  const [uploadStatus, setUploadStatus] = useState({
+    isUploading: false,
+    success: false,
+    error: null
+  });
+  
+  // Реф для input file
+  const fileInputRef = useRef(null);
   
   // Референс для контейнера с отзывами
   const reviewsRowRef = useRef(null);
@@ -338,6 +353,74 @@ export const CardRoute = () => {
     );
   };
 
+  // Функция для открытия диалога выбора файла
+  const handleUploadButtonClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  // Функция для обработки выбора файла
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Проверяем, что это изображение
+    if (!file.type.startsWith('image/')) {
+      toast.error('Пожалуйста, выберите файл изображения (JPG, PNG)');
+      return;
+    }
+    
+    // Проверяем размер файла (не более 5 МБ)
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxSize) {
+      toast.error('Размер файла не должен превышать 5 МБ');
+      return;
+    }
+    
+    setUploadStatus({
+      isUploading: true,
+      success: false,
+      error: null
+    });
+    
+    try {
+      // Отправляем файл на сервер
+      await uploadPhoto(id, file);
+      
+      // Обновляем список фотографий
+      loadRoutePhotos(id);
+      
+      setUploadStatus({
+        isUploading: false,
+        success: true,
+        error: null
+      });
+      
+      // Показываем уведомление об успешной загрузке
+      toast.success('Фотография успешно отправлена на проверку', {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      
+    } catch (error) {
+      setUploadStatus({
+        isUploading: false,
+        success: false,
+        error: error.message || 'Ошибка при загрузке файла'
+      });
+      
+      toast.error(`Ошибка при загрузке файла: ${error.message || 'Неизвестная ошибка'}`, {
+        position: "bottom-right"
+      });
+    }
+    
+    // Сбрасываем значение input, чтобы можно было загрузить тот же файл повторно
+    e.target.value = '';
+  };
+
   return (
     <div className={styles.wrapper}>
       <Header />
@@ -446,7 +529,28 @@ export const CardRoute = () => {
             </div>
             
             <div className={styles.photoSection}>
-              <h2 className={styles.sectionTitle}>Фото</h2>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Фото</h2>
+                {isAuthenticated && (
+                  <div>
+                    <button 
+                      className={styles.uploadPhotoButton} 
+                      onClick={handleUploadButtonClick}
+                      disabled={photoUploadLoading}
+                    >
+                      {photoUploadLoading ? 'Загрузка...' : 'Загрузить фото'}
+                    </button>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      className={styles.fileInput} 
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                )}
+              </div>
+              
               {photosLoading ? (
                 <div className={styles.photoLoading}>Загрузка фотографий...</div>
               ) : photosError ? (
@@ -561,6 +665,25 @@ export const CardRoute = () => {
           </div>
         </div>
       </div>
+      <ToastContainer 
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ fontSize: '16px', fontWeight: '500' }}
+        toastStyle={{
+          borderRadius: '10px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          fontFamily: 'Poppins, Arial, sans-serif',
+          padding: '12px 20px'
+        }}
+      />
     </div>
   );
 };

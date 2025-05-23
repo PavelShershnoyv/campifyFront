@@ -11,6 +11,7 @@ import CardRoute from "./components/CardRoute/CardRoute";
 import RegisterPage from "./components/RegisterPage/RegisterPage";
 import AuthPage from "./components/AuthPage/AuthPage";
 import AboutUsPage from "./components/AboutUsPage/AboutUsPage";
+import Moderation from "./components/Moderation/Moderation";
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
         <Route path="/registration" element={<RegisterPage />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/about" element={<AboutUsPage />} />
+        <Route path="/moderation" element={<Moderation />} />
       </Routes>
       {!isAuthPage && <Footer />}
     </div>

@@ -7,6 +7,10 @@ import {
   fetchRouteGpx,
   downloadRouteGpx,
   downloadRouteChecklist,
+  uploadRoutePhoto,
+  fetchUncheckedPhotos,
+  approvePhoto,
+  rejectPhoto,
   setCurrentRoute, 
   filterRoutes,
   addComment 
@@ -19,16 +23,21 @@ export const useRoutes = () => {
     currentRoute, 
     routePhotos,
     routeGpxData,
+    uncheckedPhotos,
     loading, 
     photosLoading,
     gpxLoading,
     downloadLoading,
     checklistDownloadLoading,
+    photoUploadLoading,
+    moderationLoading,
     error,
     photosError,
     gpxError,
     downloadError,
     checklistDownloadError,
+    photoUploadError,
+    moderationError,
     wildRoutes,
     equippedRoutes
   } = useSelector(state => state.routes);
@@ -63,6 +72,11 @@ export const useRoutes = () => {
     dispatch(downloadRouteChecklist(routeId));
   };
 
+  // Загрузка новой фотографии для маршрута
+  const uploadPhoto = (routeId, image) => {
+    return dispatch(uploadRoutePhoto({ routeId, image }));
+  };
+
   // Получение фотографий для конкретного маршрута
   const getRoutePhotos = (routeId) => {
     return routePhotos[routeId] || [];
@@ -70,17 +84,12 @@ export const useRoutes = () => {
 
   // Получение GPX-данных для конкретного маршрута
   const getRouteGpxData = (routeId) => {
-    return routeGpxData[routeId] || { coordinates: [], centerCoordinate: null };
+    return routeGpxData[routeId] || null;
   };
 
   // Установка текущего маршрута
-  const selectRoute = (routeId) => {
-    const route = routes.find(r => r.id === routeId);
-    if (route) {
-      dispatch(setCurrentRoute(route));
-    } else {
-      loadRouteById(routeId);
-    }
+  const selectRoute = (route) => {
+    dispatch(setCurrentRoute(route));
   };
 
   // Фильтрация маршрутов
@@ -89,21 +98,28 @@ export const useRoutes = () => {
   };
 
   // Добавление комментария к маршруту
-  const postComment = (routeId, commentData) => {
-    const comment = {
-      id: Date.now(), // временный id
-      author: 'Текущий пользователь', // в реальном приложении брать из user state
-      text: commentData.text,
-      rating: commentData.rating,
-      date: new Date().toISOString()
-    };
-    
+  const postComment = (routeId, comment) => {
     dispatch(addComment({ routeId, comment }));
   };
 
   // Получение деталей маршрута по ID
-  const getRouteById = (routeId) => {
-    return routes.find(route => route.id === routeId) || null;
+  const getRouteById = (id) => {
+    return routes.find(route => route.id === id) || null;
+  };
+
+  // Загрузка непроверенных фотографий для модерации
+  const loadUncheckedPhotos = () => {
+    dispatch(fetchUncheckedPhotos());
+  };
+
+  // Одобрение фотографии в процессе модерации
+  const approvePhotoMod = (photoId) => {
+    return dispatch(approvePhoto(photoId));
+  };
+
+  // Отклонение фотографии в процессе модерации
+  const rejectPhotoMod = (photoId) => {
+    return dispatch(rejectPhoto(photoId));
   };
 
   return {
@@ -113,27 +129,36 @@ export const useRoutes = () => {
     currentRoute,
     routePhotos,
     routeGpxData,
+    uncheckedPhotos,
     loading,
     photosLoading,
     gpxLoading,
     downloadLoading,
     checklistDownloadLoading,
+    photoUploadLoading,
+    moderationLoading,
     error,
     photosError,
     gpxError,
     downloadError,
     checklistDownloadError,
+    photoUploadError,
+    moderationError,
     loadRoutes,
     loadRouteById,
     loadRoutePhotos,
     loadRouteGpx,
     downloadGpxFile,
     downloadChecklistFile,
+    uploadPhoto,
     getRoutePhotos,
     getRouteGpxData,
     selectRoute,
     applyFilters,
     postComment,
-    getRouteById
+    getRouteById,
+    loadUncheckedPhotos,
+    approvePhotoMod,
+    rejectPhotoMod
   };
 }; 

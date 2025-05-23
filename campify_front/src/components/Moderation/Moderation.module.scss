@@ -1,0 +1,290 @@
+@import '../../variables.scss';
+
+.moderationPage {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $green-color;
+  padding-bottom: 50px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  
+  @media (max-width: 768px) {
+    padding: 0 15px;
+  }
+}
+
+.header {
+  padding: 30px 0;
+  
+  @media (max-width: 768px) {
+    padding: 20px 0;
+  }
+}
+
+.title {
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 64px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+  
+  @media (max-width: 1200px) {
+    font-size: 48px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 28px;
+  }
+}
+
+.loading, .error, .noContent {
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 24px;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 30px 0;
+  text-align: center;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+    padding: 20px;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 18px;
+    padding: 15px;
+  }
+}
+
+.loading {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.error {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+}
+
+.noContent {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.moderationItem {
+  margin-bottom: 40px;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 30px;
+  }
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+}
+
+.itemTitle {
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  
+  @media (max-width: 1200px) {
+    font-size: 32px;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 24px;
+  }
+}
+
+.author {
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: $orange-color;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media (max-width: 576px) {
+    font-size: 18px;
+  }
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+  
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.imageWrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding-bottom: 15px;
+}
+
+.image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+  
+  @media (max-width: 768px) {
+    height: 200px;
+  }
+}
+
+.photoInfo {
+  padding: 10px 15px;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 16px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  
+  @media (max-width: 576px) {
+    font-size: 14px;
+  }
+}
+
+.itemButtons {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px 10px;
+  gap: 10px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'GetVoIP Grotesque', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 992px) {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+.rejectButton {
+  background-color: #ffffff;
+  color: $orange-color;
+  
+  &:hover:not(:disabled) {
+    background-color: darken(#ffffff, 10%);
+  }
+}
+
+.approveButton {
+  background-color: $orange-color;
+  color: #ffffff;
+  
+  &:hover:not(:disabled) {
+    background-color: darken($orange-color, 10%);
+  }
+}
+
+.buttonIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @media (max-width: 992px) {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+  }
+}
+
+.rejectIcon {
+  width: 100%;
+  height: 100%;
+  background-color: $orange-color;
+  mask-image: url('../../assets/icons/cancel-icon.svg');
+  -webkit-mask-image: url('../../assets/icons/cancel-icon.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.approveIcon {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  mask-image: url('../../assets/icons/check-icon.svg');
+  -webkit-mask-image: url('../../assets/icons/check-icon.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.divider {
+  height: 1px;
+  background-color: #ffffff;
+  margin: 20px 0 40px;
+  
+  @media (max-width: 768px) {
+    margin: 15px 0 30px;
+  }
+} 
