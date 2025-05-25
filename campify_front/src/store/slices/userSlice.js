@@ -236,6 +236,8 @@ export const loginUser = createAsyncThunk(
       // Создаем объект пользователя для хранения в Redux
       const userData = {
         id: data.user_id, // Берем ID напрямую из ответа
+        email: data.email || '', // Добавляем email пользователя
+        username: data.username || '', // Добавляем username пользователя
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         isAuthenticated: true
@@ -281,6 +283,71 @@ export const fetchUserById = createAsyncThunk(
     } catch (error) {
       console.error('Ошибка при получении данных пользователя:', error);
       return rejectWithValue(error.message || 'Не удалось получить информацию о пользователе');
+    }
+  }
+);
+
+// Асинхронный экшен для получения информации о текущем пользователе
+export const fetchUserProfile = createAsyncThunk(
+  'user/fetchUserProfile',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { currentUser } = getState().user;
+      if (!currentUser || !currentUser.id) {
+        throw new Error('Пользователь не авторизован');
+      }
+      
+      const url = `${getApiUrl()}/api/users/${currentUser.id}/`;
+      console.log('Запрашиваем информацию о текущем пользователе по URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include', // Важно для работы с куками
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка получения информации о пользователе: ${response.status}`);
+      }
+
+      const userData = await response.json();
+      console.log('Получены данные пользователя:', userData);
+      
+      return userData;
+    } catch (error) {
+      console.error('Ошибка при получении данных пользователя:', error);
+      return rejectWithValue(error.message || 'Не удалось получить информацию о пользователе');
+    }
+  }
+);
+
+// Асинхронный экшен для проверки статуса авторизации
+export const checkAuthStatus = createAsyncThunk(
+  'user/checkAuthStatus',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      // Получаем доступ к текущему состоянию
+      const { user } = getState();
+      
+      // Проверяем наличие данных пользователя в состоянии
+      if (user.currentUser && user.currentUser.email) {
+        console.log('Пользователь уже авторизован:', user.currentUser.email);
+        return user.currentUser;
+      }
+      
+      // Проверяем наличие токена в куках
+      const accessToken = getCookie('access_token');
+      
+      if (!accessToken) {
+        console.log('Токен авторизации не найден в куках');
+        return rejectWithValue('Нет сохраненного токена');
+      }
+      
+      // Вместо запроса на сервер, просто возвращаем статус неавторизованного пользователя
+      return rejectWithValue('Необходима авторизация');
+      
+    } catch (error) {
+      console.error('Ошибка при проверке статуса авторизации:', error);
+      return rejectWithValue(error.message || 'Ошибка проверки статуса авторизации');
     }
   }
 );
@@ -388,6 +455,36 @@ const userSlice = createSlice({
       .addCase(fetchUserById.rejected, (state, action) => {
         state.userLoading = false;
         state.userError = action.payload;
+      })
+      // Обработка экшена fetchUserProfile
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Обработка экшена checkAuthStatus
+      .addCase(checkAuthStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuthStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(checkAuthStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = null; // Не показываем ошибку пользователю, просто считаем, что он не авторизован
+        state.isAuthenticated = false;
+        state.currentUser = null;
       });
   },
 });

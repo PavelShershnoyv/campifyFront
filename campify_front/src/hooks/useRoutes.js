@@ -11,6 +11,7 @@ import {
   fetchUncheckedPhotos,
   approvePhoto,
   rejectPhoto,
+  fetchRecommendedRoutes,
   setCurrentRoute, 
   filterRoutes,
   addComment 
@@ -24,6 +25,7 @@ export const useRoutes = () => {
     routePhotos,
     routeGpxData,
     uncheckedPhotos,
+    recommendedRoutes,
     loading, 
     photosLoading,
     gpxLoading,
@@ -31,6 +33,7 @@ export const useRoutes = () => {
     checklistDownloadLoading,
     photoUploadLoading,
     moderationLoading,
+    recommendedLoading,
     error,
     photosError,
     gpxError,
@@ -38,6 +41,7 @@ export const useRoutes = () => {
     checklistDownloadError,
     photoUploadError,
     moderationError,
+    recommendedError,
     wildRoutes,
     equippedRoutes
   } = useSelector(state => state.routes);
@@ -45,6 +49,11 @@ export const useRoutes = () => {
   // Получение всех маршрутов
   const loadRoutes = () => {
     dispatch(fetchRoutes());
+  };
+
+  // Получение рекомендованных маршрутов для пользователя
+  const loadRecommendedRoutes = (userId) => {
+    dispatch(fetchRecommendedRoutes(userId));
   };
 
   // Получение маршрута по ID
@@ -130,6 +139,7 @@ export const useRoutes = () => {
     routePhotos,
     routeGpxData,
     uncheckedPhotos,
+    recommendedRoutes,
     loading,
     photosLoading,
     gpxLoading,
@@ -137,6 +147,7 @@ export const useRoutes = () => {
     checklistDownloadLoading,
     photoUploadLoading,
     moderationLoading,
+    recommendedLoading,
     error,
     photosError,
     gpxError,
@@ -144,7 +155,9 @@ export const useRoutes = () => {
     checklistDownloadError,
     photoUploadError,
     moderationError,
+    recommendedError,
     loadRoutes,
+    loadRecommendedRoutes,
     loadRouteById,
     loadRoutePhotos,
     loadRouteGpx,

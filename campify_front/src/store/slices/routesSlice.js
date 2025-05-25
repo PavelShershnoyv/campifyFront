@@ -471,8 +471,46 @@ export const uploadRoutePhoto = createAsyncThunk(
   }
 );
 
+// Асинхронный action для получения рекомендованных маршрутов для пользователя
+export const fetchRecommendedRoutes = createAsyncThunk(
+  'routes/fetchRecommendedRoutes',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/routes/recommendation/${userId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Трансформируем данные в нужный формат для фронтенда
+      return data.map(route => ({
+        id: route.id.toString(),
+        title: route.name,
+        description: route.description,
+        country: 'Россия', // Устанавливаем страну как Россия
+        region: route.location_area.replace('Россия ', ''), // Убираем 'Россия ' из начала строки, если она есть
+        distance: `${parseFloat(route.length_in_km).toFixed(2)} км`,
+        time: formatDuration(route.duration),
+        rating: route.average_rating ? route.average_rating.toFixed(1) : '0.0', // Используем average_rating из API
+        difficulty: route.difficulty,
+        type: route.type === 2 ? 'wild' : 'equipped', // Предполагаем, что 2 - дикие, 1 - обустроенные
+        height: `${route.height} м`,
+        gpxUrl: route.gpx_url,
+        author: route.author,
+        createdAt: route.created_at,
+        views: route.views
+      }));
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   routes: [],
+  recommendedRoutes: [],
   wildRoutes: [],
   equippedRoutes: [],
   currentRoute: null,
@@ -480,10 +518,12 @@ const initialState = {
   routeGpxData: {}, // Словарь для хранения GPX-данных маршрутов по их ID
   uncheckedPhotos: [], // Массив непроверенных фотографий для модерации
   loading: false,
+  recommendedLoading: false,
   photosLoading: false, // Отдельное состояние загрузки для фотографий
   gpxLoading: false, // Отдельное состояние загрузки для GPX-данных
   downloadLoading: false, // Состояние загрузки для скачивания GPX файла
   error: null,
+  recommendedError: null,
   photosError: null, // Отдельное состояние ошибки для фотографий
   gpxError: null, // Отдельное состояние ошибки для GPX-данных
   downloadError: null, // Состояние ошибки для скачивания GPX файла
@@ -690,6 +730,20 @@ const routesSlice = createSlice({
       .addCase(uploadRoutePhoto.rejected, (state, action) => {
         state.photoUploadLoading = false;
         state.photoUploadError = action.payload;
+      })
+      
+      // Обработка fetchRecommendedRoutes
+      .addCase(fetchRecommendedRoutes.pending, (state) => {
+        state.recommendedLoading = true;
+        state.recommendedError = null;
+      })
+      .addCase(fetchRecommendedRoutes.fulfilled, (state, action) => {
+        state.recommendedLoading = false;
+        state.recommendedRoutes = action.payload;
+      })
+      .addCase(fetchRecommendedRoutes.rejected, (state, action) => {
+        state.recommendedLoading = false;
+        state.recommendedError = action.payload;
       });
   },
 });

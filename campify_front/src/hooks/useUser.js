@@ -3,6 +3,8 @@ import {
   loginUser,
   registerUser,
   getCSRFToken,
+  fetchUserProfile,
+  checkAuthStatus,
   logout, 
   clearErrors,
   resetRegisterSuccess,
@@ -36,7 +38,22 @@ export const useUser = () => {
 
   // Авторизация пользователя
   const login = async (credentials) => {
-    return dispatch(loginUser(credentials));
+    const result = await dispatch(loginUser(credentials));
+    // После успешной авторизации получаем полную информацию о пользователе
+    if (result.meta.requestStatus === 'fulfilled') {
+      dispatch(fetchUserProfile());
+    }
+    return result;
+  };
+
+  // Проверка статуса авторизации
+  const checkAuth = async () => {
+    return dispatch(checkAuthStatus());
+  };
+
+  // Получение полной информации о текущем пользователе
+  const getUserProfile = async () => {
+    return dispatch(fetchUserProfile());
   };
 
   // Выход из системы
@@ -74,6 +91,13 @@ export const useUser = () => {
     return favorites.includes(routeId);
   };
 
+  // Проверка, является ли текущий пользователь администратором
+  const isAdmin = () => {
+    return isAuthenticated && 
+           currentUser && 
+           currentUser.email === 'admin@adm.ru';
+  };
+
   return {
     currentUser,
     isAuthenticated,
@@ -86,12 +110,15 @@ export const useUser = () => {
     getCsrfToken,
     register,
     login,
+    getUserProfile,
     logoutUser,
     clearUserErrors,
     resetRegistrationSuccess,
     addRouteToFavorites,
     removeRouteFromFavorites,
     updateProfile,
-    isRouteFavorite
+    isRouteFavorite,
+    isAdmin,
+    checkAuth
   };
 }; 

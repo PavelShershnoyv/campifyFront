@@ -1,0 +1,209 @@
+@import '../../variables.scss';
+
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background-color: $green-color;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1220px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  @media screen and (max-width: 768px) {
+    padding: 30px 20px 40px;
+  }
+
+  @media screen and (max-width: 480px) {
+    padding: 20px 20px 30px;
+  }
+}
+
+.surveyCard {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  
+  @media screen and (max-width: 768px) {
+    padding: 20px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    padding: 15px;
+  }
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 20px;
+  text-align: center;
+  
+  @media screen and (max-width: 768px) {
+    font-size: 30px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 24px;
+  }
+}
+
+.description {
+  font-size: 18px;
+  color: $white;
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.5;
+  
+  @media screen and (max-width: 768px) {
+    font-size: 16px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: $orange-color;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.questionNumber {
+  color: $white;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+.questionContainer {
+  margin-bottom: 40px;
+}
+
+.questionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: $white;
+  margin-bottom: 20px;
+  
+  @media screen and (max-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    font-size: 18px;
+  }
+}
+
+.radioList, .checkboxList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  
+  @media screen and (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.radioItem, .checkboxItem {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  input[type="radio"], input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.radioText, .checkboxText {
+  color: $white;
+  font-size: 16px;
+  
+  @media screen and (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 12px 30px;
+  border-radius: 50px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @media screen and (max-width: 768px) {
+    padding: 10px 25px;
+    font-size: 15px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    padding: 8px 20px;
+    font-size: 14px;
+  }
+}
+
+.backButton {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: $white;
+  
+  &:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.nextButton {
+  background-color: $orange-color;
+  color: $white;
+  
+  &:hover:not(:disabled) {
+    background-color: darken($orange-color, 5%);
+  }
+} 

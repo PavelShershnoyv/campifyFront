@@ -13,8 +13,10 @@ const AuthPage = () => {
     error, 
     loading, 
     isAuthenticated, 
+    currentUser,
     clearUserErrors,
-    getCsrfToken 
+    getCsrfToken,
+    isAdmin
   } = useUser();
   
   const [formData, setFormData] = useState({
@@ -36,10 +38,16 @@ const AuthPage = () => {
 
   // Перенаправление после успешной авторизации
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    if (isAuthenticated && currentUser) {
+      // Если пользователь админ, перенаправляем на страницу модерации
+      if (currentUser.email === 'admin@adm.ru') {
+        navigate('/moderation');
+      } else {
+        // Обычных пользователей перенаправляем на главную
+        navigate('/');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, currentUser, navigate]);
 
   const handleRememberChange = () => {
     setRememberPassword(!rememberPassword);

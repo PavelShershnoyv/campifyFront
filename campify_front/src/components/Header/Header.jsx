@@ -6,7 +6,7 @@ import classes from "./Header.module.scss";
 const Header = () => {
   // Получаем информацию о пользователе из Redux
   const { isAuthenticated, user } = useSelector(state => state.user);
-
+  console.log(isAuthenticated);
   return (
     <div className={classes.header}>
       <Link to="/" className={classes.header__logo}>Campify</Link>
@@ -14,7 +14,10 @@ const Header = () => {
         <Link to="/routes"><p>Маршруты</p></Link>
         <Link to="/scheduler"><p>Планировщик</p></Link>
         {isAuthenticated && (
-          <Link to="/my-routes"><p>Мои маршруты</p></Link>
+          <>
+            <Link to="/my-routes"><p>Мои маршруты</p></Link>
+            <Link to="/recommendations"><p>Рекомендации</p></Link>
+          </>
         )}
         <Link to="/about"><p>О нас</p></Link>
       </div>
