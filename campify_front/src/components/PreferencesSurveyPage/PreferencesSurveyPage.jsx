@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import Header from '../Header/Header';
 import styles from './PreferencesSurveyPage.module.scss';
 import { useUser } from '../../hooks/useUser';
+import { submitUserPreferences } from '../../store/slices/userSlice';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PreferencesSurveyPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { currentUser, isAuthenticated } = useSelector(state => state.user);
   const { updateProfile } = useUser();
   
@@ -26,6 +30,18 @@ const PreferencesSurveyPage = () => {
   
   // Состояние для отслеживания текущего вопроса
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  
+  // Проверка авторизации при загрузке компонента
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+  
+  // Если пользователь не авторизован, не рендерим основной контент
+  if (!isAuthenticated) {
+    return null;
+  }
   
   // Массив вопросов
   const questions = [
@@ -185,35 +201,114 @@ const PreferencesSurveyPage = () => {
     console.log('Отправляем ответы:', answers);
     
     try {
-      // Создаем объект для отправки данных на сервер
-      const surveyData = {
-        user_id: currentUser.id,
-        answers: answers
-      };
+      // Преобразуем ответы в массив тегов согласно требуемому формату
+      const tags = [];
       
-      // Отправляем данные на сервер (здесь нужно заменить URL на реальный эндпоинт API)
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/user-preferences/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(surveyData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Ошибка при сохранении предпочтений');
+      // Добавляем тег для опыта походов
+      switch(answers.experienceLevel) {
+        case 'beginner': tags.push('новичок'); break;
+        case 'camping': tags.push('кемпинг'); break;
+        case 'occasional': tags.push('опытный'); break;
+        case 'experienced': tags.push('профи'); break;
       }
       
-      // Обновляем статус прохождения теста в профиле пользователя
-      updateProfile({ is_pass_test: true });
+      // Добавляем теги для активностей
+      if (answers.activities.includes('hiking')) tags.push('пеший');
+      if (answers.activities.includes('kayaking')) tags.push('сплав');
+      if (answers.activities.includes('photography')) tags.push('фото');
+      if (answers.activities.includes('caving')) tags.push('пещеры');
+      if (answers.activities.includes('yoga')) tags.push('релакс');
       
-      // После успешной отправки показываем сообщение и перенаправляем на страницу рекомендаций
-      alert('Ваши предпочтения сохранены! Теперь мы сможем рекомендовать вам более подходящие маршруты.');
-      navigate('/recommendations');
+      // Добавляем тег для продолжительности похода
+      switch(answers.tripDuration) {
+        case 'oneday': tags.push('1_день'); break;
+        case 'shorttrip': tags.push('выходные'); break;
+        case 'mediumtrip': tags.push('неделя'); break;
+        case 'longtrip': tags.push('экспедиция'); break;
+      }
+      
+      // Добавляем тег для уровня комфорта
+      switch(answers.comfortLevel) {
+        case 'cartent': tags.push('комфорт_авто'); break;
+        case 'wildcamping': tags.push('дикий'); break;
+        case 'glamping': tags.push('глэмпинг'); break;
+        case 'cabin': tags.push('укрытие'); break;
+      }
+      
+      // Добавляем теги для локаций
+      if (answers.locations.includes('mountains')) tags.push('горы');
+      if (answers.locations.includes('lakes')) tags.push('вода');
+      if (answers.locations.includes('forest')) tags.push('лес');
+      if (answers.locations.includes('historical')) tags.push('история');
+      if (answers.locations.includes('hidden')) tags.push('секретные');
+      
+      // Добавляем тег для компании
+      switch(answers.travelCompanions) {
+        case 'friends': tags.push('взрослые'); break;
+        case 'children': tags.push('дети'); break;
+        case 'dog': tags.push('с_собакой'); break;
+        case 'guide': tags.push('группа'); break;
+      }
+      
+      // Добавляем тег для сезона
+      switch(answers.season) {
+        case 'summer': tags.push('лето'); break;
+        case 'autumn': tags.push('осень'); break;
+        case 'winter': tags.push('зима'); break;
+        case 'spring': tags.push('весна'); break;
+      }
+      
+      // Добавляем тег для цели похода
+      switch(answers.tripPurpose) {
+        case 'adrenaline': tags.push('экстрим'); break;
+        case 'nature': tags.push('природа'); break;
+        case 'culture': tags.push('культура'); break;
+        case 'relaxation': tags.push('релакс'); break;
+      }
+      
+      // Добавляем теги для аренды снаряжения
+      if (answers.equipmentRental.includes('tent')) tags.push('аренда_снаряжение');
+      if (answers.equipmentRental.includes('stove')) tags.push('аренда_кухня');
+      if (answers.equipmentRental.includes('transport')) tags.push('аренда_транспорт');
+      if (answers.equipmentRental.includes('none')) tags.push('без_аренды');
+      
+      // Добавляем тег для физической нагрузки
+      switch(answers.physicalActivity) {
+        case 'light': tags.push('легко'); break;
+        case 'moderate': tags.push('средне'); break;
+        case 'intense': tags.push('сложно'); break;
+        case 'transport': tags.push('транспорт'); break;
+      }
+      
+      console.log('Отправляем теги:', tags);
+      
+      // Отправляем данные через экшен Redux
+      const resultAction = await dispatch(submitUserPreferences(tags));
+      
+      if (submitUserPreferences.fulfilled.match(resultAction)) {
+        // После успешной отправки показываем сообщение
+        toast.success('Ваши предпочтения сохранены! Теперь мы сможем рекомендовать вам более подходящие маршруты.', {
+          position: "bottom-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+        
+        // Небольшая задержка перед перенаправлением на главную страницу
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } else {
+        throw new Error(resultAction.error.message || 'Ошибка при сохранении предпочтений');
+      }
     } catch (error) {
       console.error('Ошибка при отправке предпочтений:', error);
-      alert('Произошла ошибка при сохранении предпочтений. Пожалуйста, попробуйте еще раз.');
+      toast.error('Произошла ошибка при сохранении предпочтений. Пожалуйста, попробуйте еще раз.', {
+        position: "bottom-right",
+        autoClose: 5000
+      });
     }
   };
   
@@ -320,6 +415,18 @@ const PreferencesSurveyPage = () => {
           </div>
         </div>
       </div>
+      <ToastContainer 
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };

@@ -33,7 +33,7 @@ function App() {
         <Route path="/routes" element={<RoutesPage />} />
         <Route path="/my-routes" element={<PrivateRoute element={<MyRoutesPage />} />} />
         <Route path="/recommendations" element={<PrivateRoute element={<RecommendationsPage />} />} />
-        <Route path="/preferences-survey" element={<PrivateRoute element={<PreferencesSurveyPage />} />} />
+        <Route path="/preferences-survey" element={<PreferencesSurveyPage />} />
         {/* <Route path="/map" element={<Map />} /> */}
         <Route path="/scheduler" element={<Scheduler />} />
         <Route path="/route-details/:id" element={<CardRoute />} />

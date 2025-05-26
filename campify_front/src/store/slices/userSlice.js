@@ -247,6 +247,57 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
+// Асинхронный экшен для отправки данных теста по рекомендациям
+// tagsData - массив строк с тегами, которые выбрал пользователь в опросе
+export const submitUserPreferences = createAsyncThunk(
+  'user/submitUserPreferences',
+  async (tagsData, { rejectWithValue, getState }) => {
+    try {
+      // Получаем ID пользователя из состояния
+      const userId = selectUserId(getState());
+      
+      if (!userId) {
+        throw new Error('Пользователь не авторизован');
+      }
+      
+      // Используем фиксированный URL вместо getApiUrl() для этого эндпоинта
+      const response = await fetch('http://127.0.0.1:8000/api/user/preferences/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          user_id: userId,
+          tags: tagsData
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Ошибка при отправке данных теста';
+        
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (e) {
+          console.error('Не удалось получить детали ошибки:', e);
+        }
+        
+        return rejectWithValue(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('Ответ при отправке данных теста:', data);
+      
+      // Возвращаем обновленный статус прохождения теста
+      return { is_pass_test: true };
+    } catch (error) {
+      console.error('Ошибка при отправке данных теста:', error);
+      return rejectWithValue(error.message || 'Не удалось отправить данные теста');
+    }
+  }
+);
+
 // Асинхронный экшен для проверки статуса авторизации
 export const checkAuthStatus = createAsyncThunk(
   'user/checkAuthStatus',
@@ -395,6 +446,24 @@ const userSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Обработка экшена submitUserPreferences
+      .addCase(submitUserPreferences.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitUserPreferences.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = {
+          ...state.currentUser,
+          is_pass_test: action.payload.is_pass_test
+        };
+        state.isPassTest = action.payload.is_pass_test;
+        state.isAuthenticated = true;
+      })
+      .addCase(submitUserPreferences.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
