@@ -183,7 +183,8 @@ export const fetchUserById = createAsyncThunk(
       const cachedUsers = getState().user.usersCache;
       if (cachedUsers[userId]) {
         console.log('Информация о пользователе с ID', userId, 'взята из кэша');
-        return { userId, userData: cachedUsers[userId] };
+        // Возвращаем rejected, чтобы не обновлять состояние
+        return rejectWithValue('Пользователь уже в кэше');
       }
       
       const url = `${getApiUrl()}/api/user/${userId}/`;
@@ -433,7 +434,10 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserById.rejected, (state, action) => {
         state.userLoading = false;
-        state.userError = action.payload;
+        // Не показываем ошибку, если пользователь уже в кэше
+        if (action.payload !== 'Пользователь уже в кэше') {
+          state.userError = action.payload;
+        }
       })
       // Обработка экшена fetchUserProfile
       .addCase(fetchUserProfile.pending, (state) => {

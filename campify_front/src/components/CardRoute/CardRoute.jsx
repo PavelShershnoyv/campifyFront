@@ -100,6 +100,9 @@ export const CardRoute = () => {
     error: null
   });
   
+  // Состояние для отслеживания запрошенных пользователей
+  const [requestedUsers, setRequestedUsers] = useState(new Set());
+  
   // Реф для input file
   const fileInputRef = useRef(null);
   
@@ -141,14 +144,16 @@ export const CardRoute = () => {
         .filter(review => review && review.user)
         .map(review => review.user))];
       
-      // Загружаем информацию о каждом пользователе, если его нет в кэше
+      // Загружаем информацию о каждом пользователе, если его нет в кэше и не был запрошен
       userIds.forEach(userId => {
-        if (!usersCache[userId]) {
+        if (userId && !usersCache[userId] && !requestedUsers.has(userId)) {
+          console.log('Запрашиваем данные пользователя с ID:', userId);
+          setRequestedUsers(prev => new Set([...prev, userId]));
           dispatch(fetchUserById(userId));
         }
       });
     }
-  }, [normalizedReviews, dispatch, usersCache]);
+  }, [normalizedReviews, usersCache, dispatch, requestedUsers]);
   
   // Обновляем фотографии, когда они загружены
   useEffect(() => {
@@ -299,8 +304,8 @@ export const CardRoute = () => {
       return user.username || 'Пользователь';
     }
     
-    // Если пользователя нет в кэше, запрашиваем информацию
-    dispatch(fetchUserById(userId));
+    // Если пользователя нет в кэше, возвращаем "Загрузка..."
+    // Запрос будет выполнен в useEffect выше
     return 'Загрузка...';
   };
 
