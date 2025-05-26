@@ -192,17 +192,23 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       
       // Создаем элемент маркера
       const markerEl = document.createElement('div');
-      markerEl.className = styles.locationMarker;
       
-      // Определяем тип локации (если информация доступна)
+      // Определяем тип локации и стиль маркера
       let markerLabel = 'Л';
+      let markerClass = styles.locationMarker;
+      
       if (point.type === 'camping') markerLabel = 'К'; // Кемпинг
       else if (point.type === 'sight') markerLabel = 'Д'; // Достопримечательность
       else if (point.type === 'viewpoint') markerLabel = 'О'; // Обзорная точка
+      else if (point.type === 'danger') {
+        markerLabel = '⚠'; // Знак опасности
+        markerClass = styles.dangerMarker; // Красный стиль
+      }
       
+      markerEl.className = markerClass;
       markerEl.innerText = markerLabel;
       markerEl.title = point.name || 'Локация';
-      
+    
       // Добавляем data-атрибут с информацией о точке
       markerEl.dataset.locationName = point.name || 'Локация';
       
@@ -220,31 +226,31 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       markerEl.addEventListener('mouseleave', () => {
         tooltipDiv.style.display = 'none';
       });
-      
-      // Создаем popup с информацией о точке
-      const popupContent = `
-        <div style="max-width: 200px;">
+        
+        // Создаем popup с информацией о точке
+        const popupContent = `
+          <div style="max-width: 200px;">
           ${point.image ? `<img src="${point.image}" alt="${point.name || 'Локация'}" style="
-            width: 100%; 
-            height: 80px; 
-            object-fit: cover; 
-            border-radius: 6px; 
-            margin-bottom: 8px;
-          ">` : ''}
-          <h3 style="
-            margin: 0 0 6px 0; 
-            font-size: 14px; 
-            color: #333; 
-            font-weight: 600;
-            line-height: 1.3;
+              width: 100%; 
+              height: 80px; 
+              object-fit: cover; 
+              border-radius: 6px; 
+              margin-bottom: 8px;
+            ">` : ''}
+            <h3 style="
+              margin: 0 0 6px 0; 
+              font-size: 14px; 
+              color: #333; 
+              font-weight: 600;
+              line-height: 1.3;
           ">${point.name || 'Локация'}</h3>
-          ${point.description ? `<p style="
+                    ${point.description ? `<p style="
             margin: 0 0 10px 0; 
             font-size: 12px; 
             color: #666; 
             line-height: 1.4;
           ">${point.description}</p>` : ''}
-          <button id="add-location-${index}" style="
+          ${point.type !== 'danger' ? `<button id="add-location-${index}" style="
             background-color: #4CAF50; 
             color: white; 
             border: none; 
@@ -254,30 +260,36 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
             width: 100%;
             font-size: 12px;
             font-weight: 500;
-          ">Добавить к маршруту</button>
-        </div>
-      `;
-      
-      const popup = new mapboxgl.Popup({
-        closeButton: true,
-        closeOnClick: false,
-        offset: 25
+          ">Добавить к маршруту</button>` : ''}
+          </div>
+        `;
+        
+        const popup = new mapboxgl.Popup({
+          closeButton: true,
+          closeOnClick: false,
+          offset: 25
       }).setHTML(popupContent);
       
       // Создаем маркер
       const marker = new mapboxgl.Marker({
         element: markerEl,
         anchor: 'bottom'
-      })
-        .setLngLat(coordinates)
+        })
+          .setLngLat(coordinates)
         .setPopup(popup)
-        .addTo(map.current);
-      
+          .addTo(map.current);
+        
       // Сохраняем маркер в ref
       mapPointMarkersRef.current.push(marker);
       
-      // Добавляем обработчик для кнопки в popup после добавления popup в DOM
+            // Добавляем обработчик для кнопки в popup после добавления popup в DOM
       popup.on('open', () => {
+        // Пропускаем добавление обработчика для опасных локаций
+        if (point.type === 'danger') {
+          console.log(`Локация ${point.name} помечена как опасная, кнопка не добавляется`);
+          return;
+        }
+        
         console.log(`Popup для локации ${point.name} открыт, ищем кнопку #add-location-${index}`);
         setTimeout(() => {
           const addButton = document.getElementById(`add-location-${index}`);
@@ -291,43 +303,43 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
             // Добавляем новый обработчик
             newAddButton.addEventListener('click', function(e) {
               // Предотвращаем распространение события вверх
-              e.preventDefault();
-              e.stopPropagation();
-              
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
               console.log(`Кнопка "Добавить к маршруту" нажата для локации ${point.name}`);
-              console.log(`Координаты локации:`, coordinates);
-              
-              // Создаем маркер маршрута
-              const routeMarker = createMarker(coordinates, waypoints.length);
-              
-              // Сохраняем маркер в ref для последующего удаления
-              markersRef.current.push(routeMarker);
-              
-              // Обновляем состояние точек
-              const newWaypoints = [...waypoints, coordinates];
-              setWaypoints(newWaypoints);
-              
-              // Обновляем метки для всех маркеров
-              updateMarkerLabels();
-              
-              // Закрываем popup после добавления точки к маршруту
+                  console.log(`Координаты локации:`, coordinates);
+                  
+                  // Создаем маркер маршрута
+                  const routeMarker = createMarker(coordinates, waypoints.length);
+                  
+                  // Сохраняем маркер в ref для последующего удаления
+                  markersRef.current.push(routeMarker);
+                  
+                  // Обновляем состояние точек
+                  const newWaypoints = [...waypoints, coordinates];
+                  setWaypoints(newWaypoints);
+                  
+                  // Обновляем метки для всех маркеров
+                  updateMarkerLabels();
+                  
+                  // Закрываем popup после добавления точки к маршруту
               marker.togglePopup();
-              
-              // После добавления точки, проверяем можно ли построить маршрут
-              if (newWaypoints.length >= 2) {
-                console.log('Можно построить маршрут, у нас достаточно точек:', newWaypoints.length);
-              }
-              
+                  
+                  // После добавления точки, проверяем можно ли построить маршрут
+                  if (newWaypoints.length >= 2) {
+                    console.log('Можно построить маршрут, у нас достаточно точек:', newWaypoints.length);
+                  }
+                  
               console.log(`Точка локации ${point.name} добавлена к маршруту, всего точек:`, markersRef.current.length);
-            });
+                });
             
             console.log(`Обработчик клика добавлен для кнопки локации ${point.name}`);
           } else {
             console.warn(`Не удалось найти кнопку для локации ${point.name} с ID #add-location-${index}`);
-          }
-        }, 100);
+              }
+            }, 100);
+          });
       });
-    });
   };
 
   // Функция для создания маркера
