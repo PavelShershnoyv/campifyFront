@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Header from '../Header/Header';
 import styles from './PreferencesSurveyPage.module.scss';
+import { useUser } from '../../hooks/useUser';
 
 const PreferencesSurveyPage = () => {
   const navigate = useNavigate();
   const { currentUser, isAuthenticated } = useSelector(state => state.user);
+  const { updateProfile } = useUser();
   
   // Состояния для ответов на вопросы
   const [answers, setAnswers] = useState({
@@ -179,13 +181,40 @@ const PreferencesSurveyPage = () => {
   };
   
   // Отправка ответов на сервер
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Отправляем ответы:', answers);
-    // TODO: Здесь должен быть код для отправки ответов на сервер
     
-    // После успешной отправки перенаправляем на страницу рекомендаций
-    alert('Ваши предпочтения сохранены! Теперь мы сможем рекомендовать вам более подходящие маршруты.');
-    navigate('/recommendations');
+    try {
+      // Создаем объект для отправки данных на сервер
+      const surveyData = {
+        user_id: currentUser.id,
+        answers: answers
+      };
+      
+      // Отправляем данные на сервер (здесь нужно заменить URL на реальный эндпоинт API)
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/user-preferences/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(surveyData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка при сохранении предпочтений');
+      }
+      
+      // Обновляем статус прохождения теста в профиле пользователя
+      updateProfile({ is_pass_test: true });
+      
+      // После успешной отправки показываем сообщение и перенаправляем на страницу рекомендаций
+      alert('Ваши предпочтения сохранены! Теперь мы сможем рекомендовать вам более подходящие маршруты.');
+      navigate('/recommendations');
+    } catch (error) {
+      console.error('Ошибка при отправке предпочтений:', error);
+      alert('Произошла ошибка при сохранении предпочтений. Пожалуйста, попробуйте еще раз.');
+    }
   };
   
   // Текущий вопрос

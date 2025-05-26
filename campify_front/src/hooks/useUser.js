@@ -2,7 +2,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { 
   loginUser,
   registerUser,
-  getCSRFToken,
   fetchUserProfile,
   checkAuthStatus,
   logout, 
@@ -19,17 +18,10 @@ export const useUser = () => {
     currentUser, 
     isAuthenticated, 
     loading, 
-    csrfLoading,
     error,
-    csrfError,
     registerSuccess,
     favorites
   } = useSelector(state => state.user);
-
-  // Получение CSRF-токена
-  const getCsrfToken = async () => {
-    return dispatch(getCSRFToken());
-  };
 
   // Регистрация пользователя
   const register = async (userData) => {
@@ -97,17 +89,21 @@ export const useUser = () => {
            currentUser && 
            currentUser.email === 'admin@adm.ru';
   };
+  
+  // Проверка, прошел ли пользователь тест рекомендаций
+  const hasPassedTest = () => {
+    return isAuthenticated && 
+           currentUser && 
+           currentUser.is_pass_test === true;
+  };
 
   return {
     currentUser,
     isAuthenticated,
     loading,
-    csrfLoading,
     error,
-    csrfError,
     registerSuccess,
     favorites,
-    getCsrfToken,
     register,
     login,
     getUserProfile,
@@ -119,6 +115,7 @@ export const useUser = () => {
     updateProfile,
     isRouteFavorite,
     isAdmin,
-    checkAuth
+    checkAuth,
+    hasPassedTest
   };
 }; 

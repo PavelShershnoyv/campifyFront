@@ -8,6 +8,7 @@ import styles from './RecommendationsPage.module.scss';
 import leftImage from '../../assets/img/LeftCellRoute.jpg';
 import bigRouteImage from "../../assets/img/BigCellRoute.jpg";
 import { useRoutes } from '../../hooks/useRoutes';
+import { useUser } from '../../hooks/useUser';
 
 // Компонент для страницы "Рекомендации"
 const RecommendationsPage = () => {
@@ -21,6 +22,7 @@ const RecommendationsPage = () => {
     getRoutePhotos
   } = useRoutes();
   const { currentUser, isAuthenticated } = useSelector(state => state.user);
+  const { hasPassedTest } = useUser();
   
   // Состояние для активной вкладки (дикие/обустроенные)
   const [activeTab, setActiveTab] = useState('wild');
@@ -136,15 +138,17 @@ const RecommendationsPage = () => {
       <div className={styles.container}>
         <div className={styles.headerBlock}>
           <h1 className={styles.title}>Рекомендации</h1>
-          <button 
-            className={styles.surveyButton}
-            onClick={() => navigate('/preferences-survey')}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.surveyIcon}>
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
-            </svg>
-            <span>Настроить предпочтения</span>
-          </button>
+          {!hasPassedTest() && (
+            <button 
+              className={styles.surveyButton}
+              onClick={() => navigate('/preferences-survey')}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.surveyIcon}>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+              </svg>
+              <span>Настроить предпочтения</span>
+            </button>
+          )}
         </div>
         
         <div className={styles.tabsContainer}>
