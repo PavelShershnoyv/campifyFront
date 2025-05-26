@@ -262,7 +262,7 @@ export const submitUserPreferences = createAsyncThunk(
       }
       
       // Используем фиксированный URL вместо getApiUrl() для этого эндпоинта
-      const response = await fetch('http://127.0.0.1:8000/api/user/preferences/create', {
+      const response = await fetch(`${getApiUrl()}/api/user/preferences/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
