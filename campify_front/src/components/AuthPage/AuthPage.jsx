@@ -156,7 +156,7 @@ const AuthPage = () => {
                 </label>
               </div>
               <div className={styles.forgotPasswordContainer}>
-                <Link to="/forgot-password" className={styles.forgotPasswordLink}>
+                <Link className={styles.forgotPasswordLink}>
                   Забыли пароль?
                 </Link>
               </div>
