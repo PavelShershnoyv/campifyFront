@@ -243,9 +243,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
             font-size: 12px; 
             color: #666; 
             line-height: 1.4;
-            max-height: 60px;
-            overflow: hidden;
-            text-overflow: ellipsis;
           ">${point.description}</p>` : ''}
           <button id="add-location-${index}" style="
             background-color: #4CAF50; 
