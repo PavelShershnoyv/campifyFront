@@ -223,9 +223,30 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       
       // Создаем popup с информацией о точке
       const popupContent = `
-        <div>
-          <h3 style="margin-top: 0; font-size: 16px;">${point.name || 'Локация'}</h3>
-          ${point.description ? `<p style="margin: 5px 0; font-size: 14px;">${point.description}</p>` : ''}
+        <div style="max-width: 200px;">
+          ${point.image ? `<img src="${point.image}" alt="${point.name || 'Локация'}" style="
+            width: 100%; 
+            height: 80px; 
+            object-fit: cover; 
+            border-radius: 6px; 
+            margin-bottom: 8px;
+          ">` : ''}
+          <h3 style="
+            margin: 0 0 6px 0; 
+            font-size: 14px; 
+            color: #333; 
+            font-weight: 600;
+            line-height: 1.3;
+          ">${point.name || 'Локация'}</h3>
+          ${point.description ? `<p style="
+            margin: 0 0 10px 0; 
+            font-size: 12px; 
+            color: #666; 
+            line-height: 1.4;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          ">${point.description}</p>` : ''}
           <button id="add-location-${index}" style="
             background-color: #4CAF50; 
             color: white; 
@@ -233,8 +254,9 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
             padding: 6px 12px; 
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 5px;
             width: 100%;
+            font-size: 12px;
+            font-weight: 500;
           ">Добавить к маршруту</button>
         </div>
       `;

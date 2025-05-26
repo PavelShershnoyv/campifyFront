@@ -27,6 +27,8 @@ export const fetchRoutes = createAsyncThunk(
   'routes/fetchRoutes',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('Загружаем маршруты с URL:', `${apiUrl}/api/routes/`);
+      console.log('API URL переменная:', process.env.REACT_APP_API_URL);
       const response = await fetch(`${apiUrl}/api/routes/`);
       
       if (!response.ok) {

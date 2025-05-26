@@ -168,9 +168,18 @@
   font-weight: 500;
   color: $white;
   transition: all 0.3s ease;
+  position: relative;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &.filterActive {
+    background-color: $orange-color;
+    
+    &:hover {
+      background-color: darken($orange-color, 5%);
+    }
   }
 
   @media screen and (max-width: 768px) {
@@ -187,6 +196,50 @@
   @media screen and (max-width: 768px) {
     width: 16px;
     height: 16px;
+  }
+}
+
+.filterBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: $white;
+  border-radius: 50%;
+  
+  @media screen and (max-width: 768px) {
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+  }
+}
+
+.resetFiltersButton {
+  background-color: $orange-color;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  
+  &:hover {
+    background-color: darken($orange-color, 5%);
+  }
+  
+  @media screen and (max-width: 768px) {
+    padding: 10px 25px;
+    font-size: 16px;
+  }
+  
+  @media screen and (max-width: 480px) {
+    padding: 8px 20px;
+    font-size: 14px;
   }
 }
 

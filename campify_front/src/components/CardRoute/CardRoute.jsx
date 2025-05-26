@@ -441,12 +441,14 @@ export const CardRoute = () => {
                       <div className={styles.loading}>Загрузка карты...</div>
                     ) : gpxError ? (
                       <div className={styles.error}>Ошибка загрузки карты: {gpxError}</div>
-                    ) : (
+                    ) : gpxData && gpxData.coordinates ? (
                       <RouteMap 
                         coords={gpxData.coordinates} 
                         centerCoordinate={gpxData.centerCoordinate}
                         routeName={routeData.title || 'Маршрут'}
                       />
+                    ) : (
+                      <div className={styles.loading}>Подготовка карты...</div>
                     )}
                   </div>
                 </div>

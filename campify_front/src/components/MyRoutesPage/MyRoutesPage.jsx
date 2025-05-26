@@ -5,6 +5,7 @@ import Header from '../Header/Header';
 import BigCellRoute from '../BigCellRoute/BigCellRoute';
 import CellRoute from '../CellRoute/CellRoute';
 import Modal from '../Modal/Modal';
+import FilterModal from '../FilterModal/FilterModal';
 import styles from './MyRoutesPage.module.scss';
 import filterIcon from '../../assets/icon/Filter.png';
 import leftImage from '../../assets/img/LeftCellRoute.jpg';
@@ -21,6 +22,15 @@ const MyRoutesPage = () => {
   
   // Состояние для активной вкладки (дикие/обустроенные)
   const [activeTab, setActiveTab] = useState('wild');
+  
+  // Состояние для фильтров
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    difficulty: '',
+    type: '',
+    distance: '',
+    duration: ''
+  });
   
   // Состояния для модальных окон
   const [deleteModal, setDeleteModal] = useState({
@@ -53,6 +63,73 @@ const MyRoutesPage = () => {
       navigate('/login');
     }
   }, [dispatch, isAuthenticated, currentUser, navigate]);
+
+  // Функция фильтрации маршрутов
+  const filterRoutes = (routes) => {
+    return routes.filter(route => {
+      // Фильтр по сложности
+      if (filters.difficulty && route.difficulty !== parseInt(filters.difficulty)) {
+        return false;
+      }
+      
+      // Фильтр по типу (уже применяется через вкладки, но можно дополнительно фильтровать)
+      if (filters.type && route.type !== parseInt(filters.type)) {
+        return false;
+      }
+      
+      // Фильтр по дистанции
+      if (filters.distance) {
+        const distance = parseFloat(route.length_in_km) || 0;
+        switch (filters.distance) {
+          case 'short':
+            if (distance >= 10) return false;
+            break;
+          case 'medium':
+            if (distance < 10 || distance > 30) return false;
+            break;
+          case 'long':
+            if (distance <= 30) return false;
+            break;
+        }
+      }
+      
+      // Фильтр по продолжительности
+      if (filters.duration) {
+        // Парсим продолжительность из формата "HH:MM:SS" или числа
+        let durationHours = 0;
+        if (typeof route.duration === 'string' && route.duration.includes(':')) {
+          const parts = route.duration.split(':');
+          durationHours = parseInt(parts[0]) + (parseInt(parts[1]) / 60);
+        } else {
+          durationHours = parseFloat(route.duration) || 0;
+        }
+        
+        switch (filters.duration) {
+          case 'short':
+            if (durationHours >= 4) return false;
+            break;
+          case 'medium':
+            if (durationHours < 4 || durationHours > 8) return false;
+            break;
+          case 'long':
+            if (durationHours <= 8) return false;
+            break;
+        }
+      }
+      
+      return true;
+    });
+  };
+
+  // Обработчик открытия модального окна фильтров
+  const handleFilterButtonClick = () => {
+    setIsFilterModalOpen(true);
+  };
+
+  // Обработчик применения фильтров
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+  };
 
   // Показать модальное окно для подтверждения удаления
   const showDeleteConfirmation = (routeId) => {
@@ -122,14 +199,20 @@ const MyRoutesPage = () => {
   const wildRoutes = userRoutes.filter(route => route.type === 2); // type 2 - дикие
   const equippedRoutes = userRoutes.filter(route => route.type === 1); // type 1 - обустроенные
   
-  // Определяем, какие маршруты показывать в зависимости от активной вкладки
-  const currentRoutes = activeTab === 'wild' ? wildRoutes : equippedRoutes;
+  // Определяем базовые маршруты в зависимости от активной вкладки
+  const baseRoutes = activeTab === 'wild' ? wildRoutes : equippedRoutes;
+  
+  // Применяем фильтры к маршрутам
+  const currentRoutes = filterRoutes(baseRoutes);
   
   // Получаем основной маршрут для большой карточки (если есть)
   const mainRoute = currentRoutes.length > 0 ? currentRoutes[0] : null;
   
   // Остальные маршруты для обычных карточек
   const regularRoutes = currentRoutes.length > 1 ? currentRoutes.slice(1) : [];
+  
+  // Проверяем, активны ли какие-либо фильтры
+  const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
 
   // Форматирование времени
   const formatDuration = (durationString) => {
@@ -206,9 +289,13 @@ const MyRoutesPage = () => {
       <div className={styles.container}>
         <div className={styles.headerBlock}>
           <h1 className={styles.title}>Мои маршруты</h1>
-          <button className={styles.filterButton}>
+          <button 
+            className={`${styles.filterButton} ${hasActiveFilters ? styles.filterActive : ''}`}
+            onClick={handleFilterButtonClick}
+          >
             <img src={filterIcon} alt="Filter" className={styles.filterIcon} />
             <span>Фильтры</span>
+            {hasActiveFilters && <span className={styles.filterBadge}></span>}
           </button>
         </div>
         
@@ -239,13 +326,32 @@ const MyRoutesPage = () => {
           </div>
         ) : currentRoutes.length === 0 ? (
           <div className={styles.noRoutes}>
-            {activeTab === 'wild' ? 'У вас нет диких маршрутов' : 'У вас нет обустроенных маршрутов'}
-            <button 
-              className={styles.createRouteButton}
-              onClick={() => navigate('/scheduler')}
-            >
-              Создать маршрут
-            </button>
+            {hasActiveFilters ? (
+              <>
+                <p>По выбранным фильтрам маршруты не найдены</p>
+                <button 
+                  className={styles.resetFiltersButton}
+                  onClick={() => handleApplyFilters({
+                    difficulty: '',
+                    type: '',
+                    distance: '',
+                    duration: ''
+                  })}
+                >
+                  Сбросить фильтры
+                </button>
+              </>
+            ) : (
+              <>
+                <p>{activeTab === 'wild' ? 'У вас нет диких маршрутов' : 'У вас нет обустроенных маршрутов'}</p>
+                <button 
+                  className={styles.createRouteButton}
+                  onClick={() => navigate('/scheduler')}
+                >
+                  Создать маршрут
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -332,6 +438,14 @@ const MyRoutesPage = () => {
             cancel: null
           }}
           type={resultModal.type}
+        />
+        
+        {/* Модальное окно фильтров */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          currentFilters={filters}
         />
       </div>
     </div>

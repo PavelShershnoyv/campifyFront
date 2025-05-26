@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../Header/Header';
 import BigCellRoute from '../BigCellRoute/BigCellRoute';
 import CellRoute from '../CellRoute/CellRoute';
+import FilterModal from '../FilterModal/FilterModal';
 import styles from './RoutesPage.module.scss';
 import filterIcon from '../../assets/icon/Filter.png';
 import leftImage from '../../assets/img/LeftCellRoute.jpg';
@@ -11,6 +12,14 @@ import { useUser } from '../../hooks/useUser';
 
 const RoutesPage = () => {
   const [activeTab, setActiveTab] = useState('wild');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    difficulty: '',
+    distance: '',
+    duration: '',
+    distanceValue: 15
+  });
+  
   const { routes, wildRoutes, equippedRoutes, loading, error, loadRoutes } = useRoutes();
   const { isAuthenticated, favorites, addRouteToFavorites, removeRouteFromFavorites, isRouteFavorite } = useUser();
   
@@ -33,14 +42,74 @@ const RoutesPage = () => {
     }
   };
 
+  // Функция фильтрации маршрутов
+  const filterRoutes = (routes) => {
+    return routes.filter(route => {
+      // Фильтр по сложности
+      if (filters.difficulty && route.difficulty !== parseInt(filters.difficulty)) {
+        return false;
+      }
+      
+      // Фильтр по дистанции (используем значение слайдера)
+      if (filters.distanceValue && filters.distanceValue !== 15) {
+        // Извлекаем числовое значение из строки типа "15.5 км"
+        const distanceMatch = route.distance.match(/(\d+\.?\d*)/);
+        const routeDistance = distanceMatch ? parseFloat(distanceMatch[1]) : 0;
+        
+        // Фильтруем по максимальному значению слайдера
+        if (routeDistance > filters.distanceValue) {
+          return false;
+        }
+      }
+      
+      // Фильтр по продолжительности
+      if (filters.duration) {
+        // Извлекаем числовое значение из строки типа "3 ч 30 мин"
+        const timeMatch = route.time.match(/(\d+)/);
+        const duration = timeMatch ? parseFloat(timeMatch[1]) : 0;
+        switch (filters.duration) {
+          case 'short':
+            if (duration >= 4) return false;
+            break;
+          case 'medium':
+            if (duration < 4 || duration > 8) return false;
+            break;
+          case 'long':
+            if (duration <= 8) return false;
+            break;
+        }
+      }
+      
+      return true;
+    });
+  };
+
+  // Обработчик открытия модального окна фильтров
+  const handleFilterButtonClick = () => {
+    setIsFilterModalOpen(true);
+  };
+
+  // Обработчик применения фильтров
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+  };
+
   // Определяем, какие маршруты показывать в зависимости от активной вкладки
-  const currentRoutes = activeTab === 'wild' ? wildRoutes : equippedRoutes;
+  const baseRoutes = activeTab === 'wild' ? wildRoutes : equippedRoutes;
+  
+  // Применяем фильтры к маршрутам
+  const currentRoutes = filterRoutes(baseRoutes);
   
   // Получаем основной маршрут для большой карточки (если есть)
   const mainRoute = currentRoutes.length > 0 ? currentRoutes[0] : null;
   
   // Остальные маршруты для обычных карточек
   const regularRoutes = currentRoutes.length > 1 ? currentRoutes.slice(1) : [];
+
+  // Проверяем, активны ли какие-либо фильтры
+  const hasActiveFilters = filters.difficulty !== '' || 
+                           filters.duration !== '' || 
+                           (filters.distanceValue && filters.distanceValue !== 15);
 
   if (loading) {
     return <div className={styles.loading}>Загрузка маршрутов...</div>;
@@ -56,9 +125,13 @@ const RoutesPage = () => {
       <div className={styles.container}>
         <div className={styles.headerBlock}>
           <h1 className={styles.title}>Лучшие маршруты</h1>
-          <button className={styles.filterButton}>
+          <button 
+            className={`${styles.filterButton} ${hasActiveFilters ? styles.filterActive : ''}`}
+            onClick={handleFilterButtonClick}
+          >
             <img src={filterIcon} alt="Filter" className={styles.filterIcon} />
             <span>Фильтры</span>
+            {hasActiveFilters && <span className={styles.filterBadge}></span>}
           </button>
         </div>
         
@@ -79,21 +152,38 @@ const RoutesPage = () => {
         
         {currentRoutes.length === 0 ? (
           <div className={styles.noRoutes}>
-            {activeTab === 'wild' ? 'Дикие маршруты не найдены' : 'Обустроенные маршруты не найдены'}
+            {hasActiveFilters ? (
+              <>
+                <p>По выбранным фильтрам маршруты не найдены</p>
+                <button 
+                  className={styles.resetFiltersButton}
+                  onClick={() => handleApplyFilters({
+                    difficulty: '',
+                    distance: '',
+                    duration: '',
+                    distanceValue: 15
+                  })}
+                >
+                  Сбросить фильтры
+                </button>
+              </>
+            ) : (
+              activeTab === 'wild' ? 'Дикие маршруты не найдены' : 'Обустроенные маршруты не найдены'
+            )}
           </div>
         ) : (
           <>
             {mainRoute && (
               <div className={styles.mainRoute}>
                 <BigCellRoute 
-                  image={bigRouteImage} // Временно используем заглушку, в будущем здесь будет mainRoute.image
+                  image={bigRouteImage} 
                   title={mainRoute.title}
                   country={mainRoute.country}
                   region={mainRoute.region}
                   distance={mainRoute.distance}
                   time={mainRoute.time}
-                  rating={mainRoute.rating}
-                  isFavorite={isAuthenticated && isRouteFavorite(mainRoute.id)}
+                  rating={parseFloat(mainRoute.rating) || 5.0}
+                  isFavorite={isRouteFavorite(mainRoute.id)}
                   onFavoriteToggle={() => toggleFavorite(mainRoute.id)}
                   link={`/route-details/${mainRoute.id}`}
                 />
@@ -103,19 +193,18 @@ const RoutesPage = () => {
             {regularRoutes.map((route, index) => (
               <div className={styles.routeContainer} key={route.id}>
                 <CellRoute 
-                  image={leftImage} // Временно используем заглушку, в будущем здесь будет route.image
+                  image={leftImage}
                   title={route.title}
-                  description={route.description}
+                  description={route.description || "Нет описания"}
                   country={route.country}
                   region={route.region}
                   distance={route.distance}
                   time={route.time}
-                  rating={route.rating}
+                  rating={parseFloat(route.rating) || 5.0}
                   difficulty={route.difficulty === 1 ? "Легкий" : 
                              route.difficulty === 2 ? "Средний" : "Сложный"}
-                  duration={route.time}
                   imagePosition={index % 2 !== 0 ? "right" : "left"}
-                  isFavorite={isAuthenticated && isRouteFavorite(route.id)}
+                  isFavorite={isRouteFavorite(route.id)}
                   onFavoriteToggle={() => toggleFavorite(route.id)}
                   link={`/route-details/${route.id}`}
                 />
@@ -124,6 +213,14 @@ const RoutesPage = () => {
           </>
         )}
       </div>
+      
+      {/* Модальное окно фильтров */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
+      />
     </div>
   );
 };
