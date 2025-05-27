@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from '../Header/Header';
 import BigCellRoute from '../BigCellRoute/BigCellRoute';
 import CellRoute from '../CellRoute/CellRoute';
@@ -11,7 +12,11 @@ import { useRoutes } from '../../hooks/useRoutes';
 import { useUser } from '../../hooks/useUser';
 
 const RoutesPage = () => {
-  const [activeTab, setActiveTab] = useState('wild');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    // Получаем тип из URL параметров, по умолчанию 'wild'
+    return searchParams.get('type') === 'equipped' ? 'equipped' : 'wild';
+  });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     difficulty: '',
@@ -27,6 +32,12 @@ const RoutesPage = () => {
   useEffect(() => {
     loadRoutes();
   }, []);
+
+  // Функция для переключения вкладки с обновлением URL
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ type: tab });
+  };
 
   // Функция для переключения избранного статуса
   const toggleFavorite = (routeId) => {
@@ -138,13 +149,13 @@ const RoutesPage = () => {
         <div className={styles.tabsContainer}>
           <button 
             className={`${styles.tab} ${activeTab === 'wild' ? styles.active : ''}`}
-            onClick={() => setActiveTab('wild')}
+            onClick={() => handleTabChange('wild')}
           >
             Дикие
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'equipped' ? styles.active : ''}`}
-            onClick={() => setActiveTab('equipped')}
+            onClick={() => handleTabChange('equipped')}
           >
             Обустроенные
           </button>

@@ -18,7 +18,7 @@ const RoutesMain = () => {
           </div>
           <div className={classes.routesCard__content}>
             <h3 className={classes.routesCard__title}>Дикие<br />тропы</h3>
-            <Link to="/routes">
+            <Link to="/routes?type=wild">
             <button className={`${classes.routesCard__button} ${classes.routesCard__button_primary}`}>
               Подробнее
               <img src={arrow} alt="Arrow" className={classes.routesCard__button__arrow} />
@@ -30,7 +30,7 @@ const RoutesMain = () => {
           <div className={classes.routesCard__number}>02</div>
           <div className={classes.routesCard__content}>
             <h3 className={classes.routesCard__title}>Обустроенный<br />отдых</h3>
-            <Link to="/routes">
+            <Link to="/routes?type=equipped">
             <button className={`${classes.routesCard__button} ${classes.routesCard__button_secondary}`}>
               Подробнее
               <img src={arrow} alt="Arrow" className={classes.routesCard__button__arrow} />
