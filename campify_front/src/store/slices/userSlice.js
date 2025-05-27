@@ -187,7 +187,7 @@ export const fetchUserById = createAsyncThunk(
         return rejectWithValue('Пользователь уже в кэше');
       }
       
-      const url = `${getApiUrl()}/api/user/${userId}/`;
+      const url = `${getApiUrl()}/api/users/${userId}/`;
       console.log('Запрашиваем информацию о пользователе по URL:', url);
       
       const response = await fetch(url, {
