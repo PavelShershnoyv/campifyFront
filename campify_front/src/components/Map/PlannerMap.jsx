@@ -46,22 +46,6 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
         searchMarkerRef.current = null;
       }
 
-      // Создаем контейнер для маркера
-      const markerContainer = document.createElement('div');
-      markerContainer.className = styles.markerContainer;
-
-      // Create marker element with pin style (more visible)
-      const markerElement = document.createElement('div');
-      markerElement.className = styles.searchMarkerPin;
-      
-      // Добавляем маркер в контейнер
-      markerContainer.appendChild(markerElement);
-      
-      // Add pulse animation container
-      const pulseContainer = document.createElement('div');
-      pulseContainer.className = styles.pulseContainer;
-      pulseContainer.appendChild(markerContainer);
-
       // Create popup
       const popup = new mapboxgl.Popup({
         offset: 25,
@@ -132,11 +116,10 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       // Set popup content
       popup.setDOMContent(popupContent);
 
-      // Create the marker
+      // Create the search marker using standard Mapbox marker with distinctive color
       searchMarkerRef.current = new mapboxgl.Marker({
-        element: pulseContainer,
-        anchor: 'center',
-        offset: [0, 0]
+        color: '#E91E63', // Розовый цвет для выделения найденной локации
+        scale: 1.2 // Увеличиваем размер для лучшей видимости
       })
         .setLngLat(location.coordinates)
         .setPopup(popup)
@@ -190,42 +173,13 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       bounds.extend(coordinates);
       hasPoints = true;
       
-      // Создаем элемент маркера
-      const markerEl = document.createElement('div');
+      // Определяем цвет маркера в зависимости от типа локации
+      let markerColor = '#2196F3'; // Синий по умолчанию
       
-      // Определяем тип локации и стиль маркера
-      let markerLabel = 'Л';
-      let markerClass = styles.locationMarker;
-      
-      if (point.type === 'camping') markerLabel = 'К'; // Кемпинг
-      else if (point.type === 'sight') markerLabel = 'Д'; // Достопримечательность
-      else if (point.type === 'viewpoint') markerLabel = 'О'; // Обзорная точка
-      else if (point.type === 'danger') {
-        markerLabel = '⚠'; // Знак опасности
-        markerClass = styles.dangerMarker; // Красный стиль
-      }
-      
-      markerEl.className = markerClass;
-      markerEl.innerText = markerLabel;
-      markerEl.title = point.name || 'Локация';
-    
-      // Добавляем data-атрибут с информацией о точке
-      markerEl.dataset.locationName = point.name || 'Локация';
-      
-      // Создаем всплывающую подсказку
-      const tooltipDiv = document.createElement('div');
-      tooltipDiv.className = styles.markerTooltip;
-      tooltipDiv.textContent = point.name || 'Локация';
-      markerEl.appendChild(tooltipDiv);
-      
-      // Показываем/скрываем подсказку при наведении
-      markerEl.addEventListener('mouseenter', () => {
-        tooltipDiv.style.display = 'block';
-      });
-      
-      markerEl.addEventListener('mouseleave', () => {
-        tooltipDiv.style.display = 'none';
-      });
+      if (point.type === 'camping') markerColor = '#4CAF50'; // Зеленый для кемпинга
+      else if (point.type === 'sight') markerColor = '#FF9800'; // Оранжевый для достопримечательности
+      else if (point.type === 'viewpoint') markerColor = '#9C27B0'; // Фиолетовый для обзорной точки
+      else if (point.type === 'danger') markerColor = '#F44336'; // Красный для опасности
         
         // Создаем popup с информацией о точке
         const popupContent = `
@@ -270,10 +224,10 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
           offset: 25
       }).setHTML(popupContent);
       
-      // Создаем маркер
+      // Создаем стандартный маркер Mapbox с заданным цветом
       const marker = new mapboxgl.Marker({
-        element: markerEl,
-        anchor: 'bottom'
+        color: markerColor,
+        scale: 0.8 // Немного уменьшаем размер для лучшего вида
         })
           .setLngLat(coordinates)
         .setPopup(popup)
@@ -342,13 +296,27 @@ const PlannerMap = forwardRef(({ onRouteUpdate }, ref) => {
       });
   };
 
-  // Функция для создания маркера
+  // Функция для создания маркера для точек маршрута
   const createMarker = (lngLat, index) => {
     // Используем стандартный маркер MapboxGL с цветом
+    // Первая точка зеленая (старт), остальные оранжевые
     const color = index === 0 ? '#4CAF50' : '#ff6b35';
-    const marker = new mapboxgl.Marker({ color })
+    
+    // Создаем popup с номером точки
+    const popup = new mapboxgl.Popup({
+      offset: 25,
+      closeButton: false,
+      closeOnClick: false
+    }).setText(`Точка ${index + 1}`);
+    
+    const marker = new mapboxgl.Marker({ 
+      color,
+      scale: 1.0 // Стандартный размер для точек маршрута
+    })
       .setLngLat(lngLat)
+      .setPopup(popup)
       .addTo(map.current);
+    
     return marker;
   };
 
